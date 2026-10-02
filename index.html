@@ -8,8 +8,10 @@
 :root{--c1:#2b6cb0;--bg:#f2f6fb;--ok:#2f855a;--bad:#c53030}
 *{box-sizing:border-box}
 body{margin:0;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:#222;font-size:18px;line-height:1.55}
-header{background:linear-gradient(90deg,#2b6cb0,#4299e1);color:#fff;padding:14px 22px}
+header{background:linear-gradient(90deg,#2b6cb0,#4299e1);color:#fff;padding:14px 22px;position:relative}
 header h1{margin:0;font-size:26px}header p{margin:4px 0 0;font-size:15px;opacity:.92}
+.credit{position:absolute;right:22px;top:14px;font-size:15px;background:rgba(255,255,255,.22);padding:4px 12px;border-radius:999px}
+@media(max-width:760px){.credit{position:static;display:inline-block;margin-top:6px}}
 nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;background:#fff;border-bottom:2px solid #dde3ea;position:sticky;top:0;z-index:20}
 nav button{border:2px solid #cbd5e0;background:#fff;border-radius:20px;padding:6px 14px;font-size:16px;cursor:pointer}
 nav button.active{background:var(--c1);color:#fff;border-color:var(--c1)}
@@ -23,6 +25,7 @@ h2{margin:8px 0 4px;font-size:28px}h3{margin:0 0 8px;font-size:21px;color:#2a436
 .btn{background:var(--c1);color:#fff;border:0;border-radius:10px;padding:9px 18px;font-size:17px;cursor:pointer;margin:4px}
 .btn.ghost{background:#fff;color:var(--c1);border:2px solid var(--c1)}.btn.ok{background:var(--ok)}.btn:disabled{opacity:.5;cursor:default}
 .btns{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+.btns .btn.ghost.active{background:var(--c1);color:#fff}
 .props li{font-size:19px;margin:4px 0}
 .choices{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:12px}
 .choice{font-size:20px;padding:10px 22px;border-radius:12px;border:2px solid #cbd5e0;background:#fff;cursor:pointer}
@@ -101,12 +104,27 @@ table.cmp td.good{background:#c6f6d5}table.cmp td.wrong{background:#fed7d7}table
 .gc-bar .btn.ghost.active{background:var(--c1);color:#fff}
 .gc-tbl{border-collapse:collapse;width:100%;font-size:17px}.gc-tbl td,.gc-tbl th{border:1px solid #cbd5e0;padding:6px 8px;text-align:center}
 .gc-tbl th{background:#ebf8ff}.gc-tbl td.u{font-weight:bold;font-size:20px}
+
+/* ===== 方格紙／比較頁／窗櫺 ===== */
+.gridpaper{width:100%;max-width:400px;background:#fff;border:3px solid #4a5568;border-radius:8px;touch-action:manipulation;cursor:pointer;display:block}
+.sort-wrap{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}@media(max-width:800px){.sort-wrap{grid-template-columns:1fr}}
+.sort-bin{min-height:110px;border:3px dashed #cbd5e0;border-radius:12px;padding:8px;cursor:pointer}
+.sort-bin h4{margin:0 0 6px;text-align:center;font-size:17px}
+.sort-card{display:block;width:100%;margin:4px 0;padding:8px;border-radius:8px;border:2px solid #cbd5e0;background:#fff;font-size:17px;cursor:pointer;text-align:left}
+.sort-card.sel{border-color:var(--c1);background:#ebf8ff}.sort-card.good{background:#c6f6d5;border-color:var(--ok)}.sort-card.badc{background:#fed7d7;border-color:var(--bad)}
+.paint-card{cursor:pointer;display:inline-block;margin:6px;border:3px solid transparent;border-radius:12px;padding:4px}
+.cells{display:grid;grid-template-columns:repeat(5,44px);gap:3px;justify-content:center;margin:8px 0}.cells div{width:44px;height:44px;background:#edf2f7;border:1px solid #cbd5e0;cursor:pointer;border-radius:4px}.cells div.on{background:#f6ad55;border-color:#9a3412}
+.lat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.lat-item{background:#fffaf0;border:1px solid #e2cfa5;border-radius:10px;padding:8px;text-align:center}
+.lat-item svg{width:100%;height:auto}
+.win-svg{width:100%;display:block;margin:auto}
 </style>
 </head>
 <body>
 <header>
  <h1>認識四邊形的特性 <span style="font-size:16px;opacity:.9">數學科・圖形與空間・平面圖形</span></h1>
- <p>互動教學網頁｜正方形・長方形・平行四邊形・梯形・菱形・鷂形｜釘板・七巧板・生活中的四邊形・風箏與非遺</p>
+ <p>互動教學網頁｜正方形・長方形・平行四邊形・梯形・菱形・鷂形｜釘板・七巧板・方格紙・生活中的四邊形・窗櫺・風箏與非遺</p>
+ <div class="credit">網頁製作：關麗瑩老師</div>
 </header>
 <nav id="nav"></nav>
 <main id="main"></main>
@@ -182,7 +200,7 @@ function genShape(type,rotate=true){
 }
 
 /* ================= 分頁系統 ================= */
-const TABS=[['home','🏠 首頁'],['pre','📖 預習：認識四邊形'],['pre-opp','預習：對邊'],['pre-ang','預習：對角'],['pre-diag','預習：對角線'],['pre-adj','預習：鄰邊'],['pairs','🔢 組與條'],['square','正方形'],['rect','長方形'],['para','平行四邊形'],['trap','梯形'],['rhombus','菱形'],['kite','鷂形'],['peg','📌 釘板製作'],['tangram','🧩 七巧板'],['life','🏙️ 生活中的四邊形'],['kites','🪁 風箏與非遺'],['sum','📋 特性比較']];
+const TABS=[['home','🏠 首頁'],['pre','📖 預習：認識四邊形'],['pre-opp','預習：對邊'],['pre-ang','預習：對角'],['pre-diag','預習：對角線'],['pre-adj','預習：鄰邊'],['pairs','🔢 組與條'],['square','正方形'],['rect','長方形'],['cmp-sr','🔍 正方形 vs 長方形'],['para','平行四邊形'],['trap','梯形'],['rhombus','菱形'],['cmp-sd','🔍 正方形 vs 菱形'],['kite','鷂形'],['grid','📐 方格紙畫四邊形'],['peg','📌 釘板製作'],['tangram','🧩 七巧板'],['life','🏙️ 生活中的四邊形'],['lattice','🏮 中國傳統窗櫺'],['kites','🪁 風箏與非遺'],['sum','📋 特性比較']];
 const nav=document.getElementById('nav'),main=document.getElementById('main');
 TABS.forEach(([id,name])=>{const b=el('button',{'data-tab':id},name);b.onclick=()=>goTab(id);nav.append(b);});
 function goTab(id){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));document.querySelectorAll('section.tab').forEach(s=>s.classList.toggle('active',s.id==='tab-'+id));window.scrollTo({top:0,behavior:'smooth'});}
@@ -290,6 +308,86 @@ class Pegboard{
   else{const got=TYPES[type]||TYPES.general;this.msg.innerHTML=`<div class="feedback"><div class="bad">你畫的是<b>${got.name}</b>（${got.desc}）。<br>提示：${HINTS[this.target]}<br>點選頂點可以移除，再試試！</div></div>`;}}
 }
 
+/* ================= 方格紙 ================= */
+class GridPaper{
+ constructor(container,{n=10,cell=34,target,need=1,cross=false,trace=null}={}){
+  Object.assign(this,{n,cell,target,need,cross,trace});this.pts=[];this.done=[];this.pad=cell*.6;this.W=(n-1)*cell+2*this.pad;
+  const wrap=el('div',{class:'peg-wrap'});this.svg=document.createElementNS(NS,'svg');this.svg.setAttribute('viewBox',`0 0 ${this.W} ${this.W}`);this.svg.setAttribute('class','gridpaper');
+  const side=el('div',{style:'flex:1 1 240px'});this.msg=el('div',{class:'peg-msg'});this.prog=el('div',{style:'font-weight:bold;color:#2a4365'});const btns=el('div',{class:'btns'});
+  const undo=el('button',{class:'btn ghost'},'↩ 清除現在的點');undo.onclick=()=>{this.pts=[];this.msg.innerHTML='';this.render();};
+  const reset=el('button',{class:'btn ghost'},'🔄 全部重設');reset.onclick=()=>{this.pts=[];this.done=[];this.msg.innerHTML='';this.render();};
+  btns.append(undo,reset);side.append(this.prog,btns,this.msg);wrap.append(this.svg,side);container.append(wrap);
+  this.svg.addEventListener('click',e=>this.onClick(e));this.render();
+ }
+ xy([i,j]){return[this.pad+i*this.cell,this.pad+j*this.cell];}
+ onClick(e){const r=this.svg.getBoundingClientRect();const k=this.W/r.width;const x=(e.clientX-r.left)*k,y=(e.clientY-r.top)*k;const i=Math.round((x-this.pad)/this.cell),j=Math.round((y-this.pad)/this.cell);
+  if(i<0||j<0||i>=this.n||j>=this.n)return;const [px,py]=this.xy([i,j]);if(Math.hypot(px-x,py-y)>this.cell*.4)return;
+  const idx=this.pts.findIndex(p=>p[0]===i&&p[1]===j);
+  if(idx>=0){this.pts.splice(idx,1);this.msg.innerHTML='';}
+  else{if(this.pts.length>=4){this.msg.innerHTML='<span class="warn">已經有 4 個頂點了。點選頂點可移除，或按「清除」。</span>';return;}this.pts.push([i,j]);this.msg.innerHTML='';}
+  this.render();if(this.pts.length===4)this.check();}
+ poly(P,attrs){return `<polygon points="${ptsStr(P.map(p=>this.xy(p)))}" ${attrs}/>`;}
+ render(){let s='';const c=(this.n-1)/2;
+  for(let i=0;i<this.n;i++){const [x,y]=this.xy([i,i]);s+=`<line x1="${x}" y1="${this.pad}" x2="${x}" y2="${this.W-this.pad}" stroke="#bee3f8" stroke-width="1.5"/><line x1="${this.pad}" y1="${y}" x2="${this.W-this.pad}" y2="${y}" stroke="#bee3f8" stroke-width="1.5"/>`;}
+  if(this.cross){const [cx,cy]=this.xy([c,c]);s+=`<line x1="${cx}" y1="${this.pad}" x2="${cx}" y2="${this.W-this.pad}" stroke="#e53e3e" stroke-width="3" stroke-dasharray="8 5"/><line x1="${this.pad}" y1="${cy}" x2="${this.W-this.pad}" y2="${cy}" stroke="#e53e3e" stroke-width="3" stroke-dasharray="8 5"/>`;}
+  if(this.trace)s+=this.poly(this.trace,'fill="none" stroke="#a0aec0" stroke-width="4" stroke-dasharray="9 7"')+this.trace.map(p=>{const [x,y]=this.xy(p);return `<circle cx="${x}" cy="${y}" r="6" fill="#a0aec0"/>`;}).join('');
+  this.done.forEach(P=>{s+=this.poly(P,`fill="${TYPES[this.target].color}" fill-opacity=".25" stroke="${TYPES[this.target].color}" stroke-width="4"`);});
+  let P=this.pts;if(P.length===4){P=classifyQuad(P).P;s+=this.poly(P,'fill="#3182ce" fill-opacity=".25" stroke="#2b6cb0" stroke-width="5" stroke-linejoin="round"');}
+  else if(P.length>1)s+=`<polyline points="${ptsStr(P.map(p=>this.xy(p)))}" fill="none" stroke="#2b6cb0" stroke-width="5" stroke-linecap="round"/>`;
+  this.pts.forEach(p=>{const [x,y]=this.xy(p);s+=`<circle cx="${x}" cy="${y}" r="9" fill="#e53e3e" stroke="#2d3748" stroke-width="2"/>`;});
+  this.svg.innerHTML=s;this.prog.textContent=this.need>1?`已完成 ${this.done.length} / ${this.need} 個`:'';}
+ sig(P){const Q=classifyQuad(P).P;const v=[0,1,2,3].map(i=>[Q[(i+1)%4][0]-Q[i][0],Q[(i+1)%4][1]-Q[i][1]]);const L=v.map(a=>a[0]*a[0]+a[1]*a[1]).sort((a,b)=>a-b).join(',');return L+'|'+Math.abs(v[0][0]*v[1][1]-v[0][1]*v[1][0]);}
+ describe(P){const v=[0,1,2,3].map(i=>[P[(i+1)%4][0]-P[i][0],P[(i+1)%4][1]-P[i][1]]);return '邊長：'+v.map(a=>{const l=Math.hypot(a[0],a[1]);return (Number.isInteger(l)?l:l.toFixed(1))+' 格';}).join('、')+'。';}
+ check(){const T=TYPES[this.target];const {type,P}=classifyQuad(this.pts);
+  if(this.trace){const same=this.trace.every(t=>this.pts.some(p=>p[0]===t[0]&&p[1]===t[1]));
+   if(same){this.done=[this.pts.slice()];this.pts=[];this.render();this.msg.innerHTML=`<div class="feedback"><div class="ok">🎉 描畫正確！這是${T.name}：${T.desc}。</div></div>`;}
+   else this.msg.innerHTML='<div class="feedback"><div class="bad">頂點要剛好放在虛線圖形的 4 個灰點上，再試試！</div></div>';return;}
+  if(type!==this.target){const got=TYPES[type]||TYPES.general;this.msg.innerHTML=`<div class="feedback"><div class="bad">你畫的是<b>${got.name}</b>（${got.desc}）。<br>提示：${HINTS[this.target]}</div></div>`;return;}
+  if(this.cross){const c=(this.n-1)/2;if(!this.pts.every(p=>p[0]===c||p[1]===c)){this.msg.innerHTML='<div class="feedback"><div class="bad">菱形的 4 個頂點都要放在紅色十字線上：上下一對、左右一對！</div></div>';return;}}
+  const s=this.sig(this.pts);if(this.done.some(D=>this.sig(D)===s)){this.msg.innerHTML=`<div class="feedback"><div class="bad">這個${T.name}和已畫的一樣大小／形狀，請畫一個<b>不同</b>的！</div></div>`;return;}
+  this.done.push(this.pts.slice());this.pts=[];this.render();
+  this.msg.innerHTML=`<div class="feedback"><div class="ok">🎉 第 ${this.done.length} 個${T.name}畫好了！${this.describe(P)}${this.done.length>=this.need?'<br><b>任務完成！</b>':`<br>再畫一個<b>不同大小</b>的${T.name}。`}</div></div>`;}
+}
+function gridDemo(P,labels=[],color='#4a5568',hl=null,cross=false,n=7){const c=30,pad=16,W=(n-1)*c+2*pad;const xy=([i,j])=>[pad+i*c,pad+j*c];let s=`<svg viewBox="0 0 ${W} ${W}" style="width:100%;max-width:230px;background:#fff;border:2px solid #4a5568;border-radius:8px;display:block;margin:auto">`;
+ for(let i=0;i<n;i++){const [x,y]=xy([i,i]);s+=`<line x1="${x}" y1="${pad}" x2="${x}" y2="${W-pad}" stroke="#bee3f8" stroke-width="1.5"/><line x1="${pad}" y1="${y}" x2="${W-pad}" y2="${y}" stroke="#bee3f8" stroke-width="1.5"/>`;}
+ if(cross){const [cx,cy]=xy([(n-1)/2,(n-1)/2]);s+=`<line x1="${cx}" y1="${pad}" x2="${cx}" y2="${W-pad}" stroke="#e53e3e" stroke-width="2.5" stroke-dasharray="7 4"/><line x1="${pad}" y1="${cy}" x2="${W-pad}" y2="${cy}" stroke="#e53e3e" stroke-width="2.5" stroke-dasharray="7 4"/>`;}
+ s+=`<polygon points="${ptsStr(P.map(xy))}" fill="${color}" fill-opacity=".3" stroke="${color}" stroke-width="4" stroke-linejoin="round"/>`;
+ if(hl){const [a,b]=hl.map(xy);s+=`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" stroke="#e53e3e" stroke-width="8" stroke-linecap="round"/>`;}
+ P.forEach(p=>{const [x,y]=xy(p);s+=`<circle cx="${x}" cy="${y}" r="5" fill="#2d3748"/>`;});
+ labels.forEach(([i,j,t])=>{const [x,y]=xy([i,j]);s+=`<text x="${x}" y="${y+5}" text-anchor="middle" font-size="15" font-weight="bold" fill="#c53030">${t}</text>`;});return s+'</svg>';}
+function gridQuestions(){const qs=[];for(let k=0;k<8;k++){const sq=Math.random()<.5;const w=sq?pick([2,3,4]):pick([2,3,4,5]);const h=sq?w:pick([1,2,3,4,5].filter(x=>x!==w));const x=Math.floor(rnd(0,7-w)),y=Math.floor(rnd(0,7-h));const P=[[x,y],[x+w,y],[x+w,y+h],[x,y+h]];
+ if(k%2===0)qs.push({html:`<p>這是甚麼四邊形？（數一數每邊有幾格）</p>${gridDemo(P,[],'#4a5568')}`,choices:['正方形','長方形'],answer:sq?'正方形':'長方形',explain:sq?`4 條邊都是 ${w} 格，是正方形。`:`對邊相等（${w} 格和 ${h} 格），但長短不同，是長方形。`});
+ else{const side=pick([0,1]);const len=side?h:w;qs.push({html:`<p>紅色的邊有幾格？</p>${gridDemo(P,[],'#4a5568',side?[[x+w,y],[x+w,y+h]]:[[x,y],[x+w,y]])}`,choices:['1','2','3','4','5'],answer:String(len),explain:`紅色的邊有 ${len} 格，它的對邊也是 ${len} 格。`});}}
+ return qs;}
+const GRID_TASKS=[
+ {label:'正方形 ×2',target:'square',need:2,desc:'利用方格，畫 2 個大小不同的正方形。'},
+ {label:'長方形 ×2',target:'rect',need:2,desc:'利用方格，畫 2 個大小不同的長方形。'},
+ {label:'平行四邊形 ×2',target:'para',need:2,desc:'利用方格，畫 2 個不同形狀／大小的平行四邊形。提示：上下兩邊格數相同，再向左或右移幾格。'},
+ {label:'梯形',target:'trap',need:1,desc:'畫一個梯形：上下兩邊平行，但格數不同。'},
+ {label:'菱形（十字線）',target:'rhombus',need:1,cross:true,desc:'利用紅色十字線畫一個菱形：上下兩個頂點離中心的格數相同，左右兩個頂點離中心的格數也相同，但和上下的不同。'},
+ {label:'描一描：梯形',target:'trap',trace:[[2,6],[8,6],[6,3],[3,3]],desc:'沿虛線，點選 4 個灰點，用直線畫出這個梯形。'},
+ {label:'描一描：鷂形',target:'kite',trace:[[5,1],[8,4],[5,8],[2,4]],desc:'沿虛線描出這個鷂形。'},
+ {label:'描一描：平行四邊形',target:'para',trace:[[2,7],[7,7],[8,3],[3,3]],desc:'沿虛線描出這個平行四邊形。'}
+];
+function buildGrid(){
+ const sec=el('section',{class:'tab',id:'tab-grid'});
+ const demos=[
+  ['正方形',TYPES.square.color,[[1,1],[4,1],[4,4],[1,4]],[[2.5,0.5,'3 格'],[4.9,2.6,'3 格']],false,'每條邊都數 <b>3 格</b>，頂點都在格線交點上，4 個角都是直角。'],
+  ['長方形',TYPES.rect.color,[[1,2],[5,2],[5,4],[1,4]],[[3,1.5,'4 格'],[5.6,3.1,'2 格']],false,'長邊 <b>4 格</b>、短邊 <b>2 格</b>，對邊格數相同。'],
+  ['平行四邊形',TYPES.para.color,[[1,4],[4,4],[5,1],[2,1]],[[3.5,0.5,'3 格'],[2.5,4.6,'3 格']],false,'上下兩邊都是 <b>3 格</b>，上面的邊向右移了 1 格，左右兩邊就會平行。'],
+  ['梯形',TYPES.trap.color,[[1,4],[5,4],[4,1],[2,1]],[[3,0.5,'2 格'],[3,4.6,'4 格']],false,'上邊 <b>2 格</b>、下邊 <b>4 格</b>：只有一組對邊平行，長度不同。'],
+  ['菱形（十字線）',TYPES.rhombus.color,[[3,0],[5,3],[3,6],[1,3]],[[4.3,1.6,'3 格'],[2,3.8,'2 格']],true,'在十字線上，上下兩個頂點各離中心 <b>3 格</b>，左右兩個頂點各離中心 <b>2 格</b>，連起來就是菱形。']
+ ];
+ sec.innerHTML=`<h2>📐 用方格紙畫四邊形</h2>
+ <div class="card"><h3>📘 讀一讀：怎樣在方格紙上畫四邊形？</h3><ul class="props"><li>方格紙上每個小格都一樣大。</li><li>把每個<b>頂點</b>放在格線的<b>交點</b>上。</li><li>沿格線<b>數一數</b>每條邊有幾格，用直尺連起來，就能畫得又直又準。</li></ul>
+  <div class="grid3" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">${demos.map(d=>`<div class="shape-card" style="cursor:default">${gridDemo(d[2],d[3],d[1],null,d[4])}<div style="font-weight:bold;color:${d[1]}">${d[0]}</div><div style="font-size:15px;color:#444">${d[5]}</div></div>`).join('')}</div></div>
+ <div class="card"><h3>✏️ 畫一畫</h3><p class="tip">點選格線的交點作頂點（共 4 個）。畫好會自動檢查；再點一次頂點可移除。</p><div id="grid-tasks"></div></div>
+ <div class="card"><h3>🎮 數一數格子</h3><div id="grid-quiz"></div></div>`;
+ main.append(sec);
+ subTabs(document.getElementById('grid-tasks'),GRID_TASKS.map(t=>({label:t.label,build:p=>{p.append(el('p',{style:'font-size:19px'},t.desc));new GridPaper(p,{n:t.cross?11:10,cell:t.cross?32:34,target:t.target,need:t.need||1,cross:!!t.cross,trace:t.trace||null});}})));
+ makeQuiz(document.getElementById('grid-quiz'),gridQuestions(),{regen:gridQuestions});
+}
+
 /* ================= 按扁組件 ================= */
 function squashPara(container){
  const wrap=el('div',{class:'squash'}),svg=el('div',{style:'flex:1 1 300px'}),ctrl=el('div',{style:'flex:1 1 260px'});
@@ -316,6 +414,18 @@ function squashRhombus(container){
    <text x="${cx}" y="${P[0][1]-30}" text-anchor="middle" font-size="34">${isSq?'':'👇'}</text><text x="${cx}" y="${P[0][1]-14}" text-anchor="middle" font-size="18" fill="#c53030">${isSq?'正方形（45° 擺放）':'菱形'}</text></svg>`;
   txt.innerHTML=isSq?`現在是用 <b>45° 擺放的正方形</b>：4 條邊相等，4 個角都是直角。`:`由上壓下後變成 <b>菱形</b>：<br>• 4 條邊<b>仍然一樣長</b>（每邊都是同一枝飲管）<br>• 2 組對邊平行、2 組對角相等<br>• 角不再是直角：上下的角變大 = ${top}°（鈍角），左右的角變小 = ${side}°（銳角）`;}
  slider.oninput=draw;draw();wrap.append(svg,ctrl);container.append(wrap);
+}
+function tiltSquash(container){
+ const wrap=el('div',{class:'squash'}),svg=el('div',{style:'flex:1 1 300px'}),ctrl=el('div',{style:'flex:1 1 260px'});
+ const sRot=el('input',{type:'range',min:'0',max:'45',value:'0',class:'slider'}),sSq=el('input',{type:'range',min:'0',max:'35',value:'0',class:'slider'}),txt=el('div',{class:'squash-txt'});
+ ctrl.innerHTML='<b>第 1 步：輕輕移動（轉一轉）</b><br>';ctrl.append(sRot,el('br'),el('b',{},'第 2 步：按扁'),el('br'),sSq,txt);
+ const s=110,cx=230,cy=150;
+ function draw(){const th=+sRot.value,q=+sSq.value;const beta=(90+q)*Math.PI/180;const a=s*Math.cos(beta/2),b=s*Math.sin(beta/2);
+  const P=rot([[0,-a],[b,0],[0,a],[-b,0]],th-45).map(([x,y])=>[x+cx,y+cy]);const isSq=q===0;
+  const marks=isSq?P.map((p,i)=>rightMark(p,P[(i+3)%4],P[(i+1)%4],16)).join(''):P.map((p,i)=>angleArc(p,P[(i+3)%4],P[(i+1)%4],26,i%2?'#3182ce':'#e53e3e')).join('');
+  svg.innerHTML=`<svg viewBox="0 0 460 300" class="squash-svg"><polygon points="${ptsStr(P)}" fill="${isSq?'#fed7d7':'#feebc8'}"/>${[0,1,2,3].map(i=>`<line x1="${P[i][0]}" y1="${P[i][1]}" x2="${P[(i+1)%4][0]}" y2="${P[(i+1)%4][1]}" stroke="${isSq?'#e53e3e':'#dd6b20'}" stroke-width="12" stroke-linecap="round"/>`).join('')}${marks}${P.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="8" fill="#2d3748"/>`).join('')}<text x="230" y="288" text-anchor="middle" font-size="18" fill="#c53030">${isSq?(th?'轉了方向的正方形':'正方形'):'菱形'}</text></svg>`;
+  txt.innerHTML=isSq?(th===0?'這是 <b>正方形</b>：4 條邊相等，4 個直角。':'只是<b>輕輕移動</b>了（轉了方向），它<b>仍然是正方形</b>：4 條邊相等、4 個角仍然是直角！'):`<b>按扁</b>後變成 <b>菱形</b>：<br>• 4 條邊<b>仍然相等</b>（每邊都是同一枝飲管）<br>• 角不再是直角：一組對角 ${90+q}°（鈍角），另一組 ${90-q}°（銳角）<br>• 2 組對邊仍然平行`;}
+ sRot.oninput=draw;sSq.oninput=draw;draw();wrap.append(svg,ctrl);container.append(wrap);
 }
 function rectSlider(container){
  const wrap=el('div',{class:'squash'}),svg=el('div',{style:'flex:1 1 300px'}),ctrl=el('div',{style:'flex:1 1 260px'});
@@ -383,6 +493,10 @@ function buildShapePage(type){
  makeFill(document.getElementById('fill-'+type),S.fill);
  makeQuiz(document.getElementById('quiz-'+type),idQuestions(type),{choices:['是','不是'],regen:()=>idQuestions(type)});
  new Pegboard(document.getElementById('peg-'+type),{n:8,cell:40,target:type});
+ const mini=document.getElementById('mini-'+type);
+ if(type==='square'||type==='rect'){const b=el('button',{class:'btn ghost'},'🔍 比一比：正方形和長方形');b.onclick=()=>goTab('cmp-sr');mini.append(b);}
+ if(type==='square'||type==='rhombus'){const b=el('button',{class:'btn ghost'},'🔍 比一比：正方形和菱形');b.onclick=()=>goTab('cmp-sd');mini.append(b);}
+ const g=el('button',{class:'btn ghost'},'📐 在方格紙上畫'+T.name);g.onclick=()=>goTab('grid');mini.append(g);
  const sp=document.getElementById('special-'+type);
  if(type==='square'){sp.innerHTML='<h3>✂️ 用「長方形紙」剪出正方形</h3>';stepper(sp,STEPS.square);sp.append(el('p',{class:'tip'},'也可以用 4 枝相同長度的飲管/筆圍成一個正方形。'));}
  if(type==='rect'){sp.innerHTML='<h3>🥤 用 2 長 2 短的飲管拼長方形</h3>';rectSlider(sp);}
@@ -392,16 +506,114 @@ function buildShapePage(type){
  if(type==='kite'){sp.innerHTML='<h3>🪁 互動：用兩組長度一樣的幾何條拼鷂形</h3><p class="tip">移動橫竹的位置，看看甚麼時候是鷂形、甚麼時候變成菱形。</p>';kiteDesigner(sp);}
 }
 
+/* ================= 比較頁共用組件 ================= */
+function sortActivity(container,bins,items){
+ const pool=el('div',{class:'sort-bin'},'<h4>📋 句子</h4>');const wrap=el('div',{class:'sort-wrap'});const binEls={};
+ bins.forEach(([k,l,c])=>{const b=el('div',{class:'sort-bin',style:`border-color:${c}`},`<h4 style="color:${c}">${l}</h4>`);b.dataset.k=k;binEls[k]=b;wrap.append(b);});
+ let sel=null;const cards=shuffle(items).map(([t,k])=>{const c=el('button',{class:'sort-card'},t);c.dataset.a=k;c.onclick=e=>{e.stopPropagation();cards.forEach(x=>x.classList.remove('sel'));sel=c;c.classList.add('sel');};pool.append(c);return c;});
+ const move=target=>{if(!sel)return;target.append(sel);sel.classList.remove('sel','good','badc');sel=null;};
+ Object.values(binEls).forEach(b=>b.onclick=()=>move(b));pool.onclick=()=>move(pool);
+ const chk=el('button',{class:'btn'},'檢查答案'),res=el('div',{class:'feedback'});
+ chk.onclick=()=>{let ok=0,placed=0;cards.forEach(c=>{const inBin=c.parentElement.dataset.k;if(!inBin){c.classList.remove('good','badc');return;}placed++;const g=inBin===c.dataset.a;c.classList.toggle('good',g);c.classList.toggle('badc',!g);if(g)ok++;});
+  res.innerHTML=placed<cards.length?`<div class="bad">還有 ${cards.length-placed} 句未放進框內。</div>`:ok===cards.length?'<div class="ok">全部正確！👏</div>':`<div class="bad">答對 ${ok} / ${cards.length}，紅色的句子放錯了，點選它再放到別的框。</div>`;};
+ container.append(el('p',{class:'tip'},'👆 先點選一句，再點選要放進的框。放錯了可以再點選移動。'),pool,wrap,chk,res);
+}
+function checkTable(container,cols,rows){
+ const tbl=el('table',{class:'cmp'});tbl.innerHTML=`<tr><th></th>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>${rows.map((r,i)=>`<tr><td>${r[1]}<br><b>${r[0]}</b></td>${cols.map((c,j)=>`<td><input type="checkbox" data-r="${i}" data-c="${j}"></td>`).join('')}</tr>`).join('')}`;
+ const btns=el('div',{class:'btns'}),chk=el('button',{class:'btn'},'檢查'),show=el('button',{class:'btn ghost'},'顯示答案'),res=el('div',{class:'feedback'});btns.append(chk,show);
+ const boxes=()=>[...tbl.querySelectorAll('input')];
+ chk.onclick=()=>{let wrong=0;boxes().forEach(b=>{const ok=b.checked===rows[+b.dataset.r][2][+b.dataset.c];b.parentElement.className=ok?'good':'wrong';if(!ok)wrong++;});res.innerHTML=wrong?`<div class="bad">有 ${wrong} 格不對（紅色），再想一想！</div>`:'<div class="ok">全部正確！👏</div>';};
+ show.onclick=()=>boxes().forEach(b=>{b.checked=rows[+b.dataset.r][2][+b.dataset.c];b.parentElement.className='';});
+ container.append(tbl,btns,res);
+}
+function paintActivity(container){
+ const items=[['A','square',[[-50,-50],[50,-50],[50,50],[-50,50]]],['B','rect',[[-70,-35],[70,-35],[70,35],[-70,35]]],['C','square',rot([[-40,-40],[40,-40],[40,40],[-40,40]],30)],['D','rect',[[-30,-70],[30,-70],[30,70],[-30,70]]],['E','rect',rot([[-65,-30],[65,-30],[65,30],[-65,30]],20)]];
+ const COL={none:'#718096',g:'#38a169',r:'#e53e3e'};const row=el('div',{style:'text-align:center'});const state={};
+ items.forEach(([id,t,P])=>{state[id]='none';const c=el('div',{class:'paint-card'});c.dataset.id=id;const draw=()=>{c.innerHTML=svgShape(P,COL[state[id]],130)+`<div style="font-weight:bold">${id}</div>`;};c.onclick=()=>{state[id]=state[id]==='none'?'g':state[id]==='g'?'r':'none';c.style.borderColor='transparent';draw();};draw();row.append(c);});
+ const chk=el('button',{class:'btn'},'檢查顏色'),res=el('div',{class:'feedback'});
+ chk.onclick=()=>{let ok=0;items.forEach(([id,t])=>{const g=state[id]===(t==='square'?'g':'r');row.querySelector(`[data-id="${id}"]`).style.borderColor=g?'#2f855a':'#c53030';if(g)ok++;});res.innerHTML=ok===5?'<div class="ok">全部正確！正方形是綠色，長方形是紅色。👏</div>':`<div class="bad">有 ${5-ok} 個填錯了（紅框）。記住：轉了方向的正方形仍然是正方形！</div>`;};
+ container.append(el('p',{class:'tip'},'👆 點選圖形改變顏色：第一次變綠色（正方形），第二次變紅色（長方形），第三次還原。'),row,chk,res);
+}
+function fourSquares(container){
+ const grid=el('div',{class:'cells'}),cells=[],msg=el('div',{class:'feedback'});let target='rect';
+ const names={square:'正方形',rect:'長方形'};
+ function check(){const on=cells.map((c,i)=>c.classList.contains('on')?[i%5,Math.floor(i/5)]:null).filter(Boolean);if(on.length<4){msg.innerHTML=`已放 ${on.length} / 4 塊。`;return;}
+  const xs=on.map(p=>p[0]),ys=on.map(p=>p[1]);const w=Math.max(...xs)-Math.min(...xs)+1,h=Math.max(...ys)-Math.min(...ys)+1;const got=w*h!==4?'other':(w===h?'square':'rect');
+  if(got===target)msg.innerHTML=`<div class="ok">🎉 成功！4 塊正方形拼成了 <b>${names[target]}</b>（${w} × ${h}）。</div>`;
+  else if(got==='other')msg.innerHTML=`<div class="bad">這 4 塊沒有拼成一個長方形或正方形（有空隙或排成 L 形）。目標：${names[target]}。</div>`;
+  else msg.innerHTML=`<div class="bad">現在拼成的是 <b>${names[got]}</b>（${w} × ${h}），目標是 <b>${names[target]}</b>。${target==='square'?'試試排成 2 行 2 列。':'試試排成一直行（1 × 4）。'}</div>`;}
+ for(let i=0;i<25;i++){const d=el('div');d.onclick=()=>{if(!d.classList.contains('on')&&cells.filter(c=>c.classList.contains('on')).length>=4){msg.innerHTML='<div class="bad">只有 4 塊正方形！先點選一塊取消。</div>';return;}d.classList.toggle('on');check();};cells.push(d);grid.append(d);}
+ const bar=el('div',{class:'btns'});[['rect','拼成長方形'],['square','拼成正方形']].forEach(([k,l])=>{const b=el('button',{class:'btn ghost'},l);b.onclick=()=>{target=k;bar.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));cells.forEach(c=>c.classList.remove('on'));msg.innerHTML=`目標：<b>${l}</b>。點選 4 格放上正方形。`;};bar.append(b);});
+ container.append(bar,grid,msg);bar.children[0].click();
+}
+
+/* ================= 正方形 vs 長方形 ================= */
+function buildCmpSR(){
+ const sec=el('section',{class:'tab',id:'tab-cmp-sr'});
+ const rm=P=>P.map((p,i)=>rightMark(p,P[(i+3)%4],P[(i+1)%4],14)).join('');
+ sec.innerHTML=`<h2>🔍 正方形和長方形：有甚麼相同和不同？</h2>
+ <div class="card"><h3>👀 看一看、比一比</h3><div class="grid2">
+  <div style="text-align:center">${svgShape(SHAPES.square.example,TYPES.square.color,170,rm(SHAPES.square.example))}<div><b style="color:${TYPES.square.color}">圖形 A：正方形</b></div><ul class="props" style="text-align:left"><li>4 條邊<b>全部</b>相等</li><li>4 個角都是直角</li><li>2 組對邊平行</li></ul></div>
+  <div style="text-align:center">${svgShape(SHAPES.rect.example,TYPES.rect.color,170,rm(SHAPES.rect.example))}<div><b style="color:${TYPES.rect.color}">圖形 B：長方形</b></div><ul class="props" style="text-align:left"><li>2 組<b>對邊</b>相等（有長邊和短邊）</li><li>4 個角都是直角</li><li>2 組對邊平行</li></ul></div></div>
+  <div class="pv-key">✅ <b>相同</b>：都有 4 條邊、4 個直角、2 組對邊平行，對邊都相等。<br>❗ <b>不同</b>：正方形 <b>4 條邊全部相等</b>；長方形只是<b>對邊相等</b>，長邊和短邊不一樣長。</div></div>
+ <div class="card"><h3>✏️ 圈一圈、填一填</h3><div id="sr-fill"></div></div>
+ <div class="card"><h3>🗂️ 分一分：這句話說的是哪個圖形？</h3><div id="sr-sort"></div></div>
+ <div class="card"><h3>🎨 填顏色：正方形填綠色，長方形填紅色</h3><div id="sr-paint"></div><div id="sr-paint-fill" style="margin-top:10px"></div></div>
+ <div class="card"><h3>🧱 用 4 塊正方形拼一拼</h3><p class="tip">4 塊一樣大的正方形，可以拼成長方形，也可以拼成正方形！</p><div id="sr-four"></div></div>
+ <div class="card"><h3>🎮 認一認：正方形、長方形，還是都不是？</h3><p class="tip">小心：圖形可能轉了方向！</p><div id="sr-quiz"></div></div>`;
+ main.append(sec);
+ makeFill(document.getElementById('sr-fill'),[
+  {t:'圖形 A：[] 相等，有 [] 個直角，名稱是 []。',o:[['四邊','對邊'],N4,['正方形','長方形']],a:['四邊','4','正方形']},
+  {t:'圖形 B：[] 相等，有 [] 個直角，名稱是 []。',o:[['四邊','對邊'],N4,['正方形','長方形']],a:['對邊','4','長方形']},
+  {t:'正方形和長方形都有 [] 個直角，都有 [] 組對邊平行。',o:[N4,N4],a:['4','2']}]);
+ sortActivity(document.getElementById('sr-sort'),[['L','只有正方形',TYPES.square.color],['B','兩個都有','#2a4365'],['R','只有長方形',TYPES.rect.color]],
+  [['4 條邊的長度都相等','L'],['有長邊和短邊','R'],['4 個角都是直角','B'],['2 組對邊平行','B'],['對邊相等','B'],['是四邊形，有 4 個頂點','B'],['鄰邊的長度不同','R'],['對邊相等，但 4 條邊不是全部相等','R']]);
+ paintActivity(document.getElementById('sr-paint'));
+ makeFill(document.getElementById('sr-paint-fill'),[
+  {t:'圖形 A 和 [] 都是正方形，它們的四邊 []，有 [] 個直角。',o:[['B','C','D','E'],['相等','不相等'],N4],a:['C','相等','4']},
+  {t:'圖形 B、D 和 [] 都是長方形，它們都有 2 組對邊 []，有 [] 個直角。',o:[['A','C','E'],['相等','不相等'],N4],a:['E','相等','4']}]);
+ fourSquares(document.getElementById('sr-four'));
+ const srQ=()=>shuffle(['square','square','square','rect','rect','rect','rhombus','para','trap','kite']).slice(0,8).map(t=>({html:svgShape(genShape(t),'#4a5568',210),answer:t==='square'?'正方形':t==='rect'?'長方形':'都不是',explain:`這是${TYPES[t].name}：${TYPES[t].desc}。`}));
+ makeQuiz(document.getElementById('sr-quiz'),srQ(),{choices:['正方形','長方形','都不是'],regen:srQ});
+}
+
+/* ================= 正方形 vs 菱形 ================= */
+function buildCmpSD(){
+ const sec=el('section',{class:'tab',id:'tab-cmp-sd'});
+ const sq=SHAPES.square.example,rh=SHAPES.rhombus.example;
+ sec.innerHTML=`<h2>🔍 正方形和菱形：有甚麼相同和不同？</h2>
+ <div class="card"><h3>🥤 小明把正方形輕輕移動，再按扁……</h3><p class="tip">先拉第 1 個滑桿把正方形轉一轉，再拉第 2 個滑桿把它按扁，看看會變成甚麼。</p><div id="sd-tilt"></div></div>
+ <div class="card"><h3>👀 比一比</h3><div class="grid2">
+  <div style="text-align:center">${svgShape(sq,TYPES.square.color,170,sq.map((p,i,P)=>rightMark(p,P[(i+3)%4],P[(i+1)%4],14)).join(''))}<div><b style="color:${TYPES.square.color}">正方形</b></div><ul class="props" style="text-align:left"><li>4 條邊相等</li><li>4 個角都是<b>直角</b></li><li>2 組對邊平行</li></ul></div>
+  <div style="text-align:center">${svgShape(rh,TYPES.rhombus.color,170,rh.map((p,i,P)=>angleArc(p,P[(i+3)%4],P[(i+1)%4],18,i%2?'#3182ce':'#e53e3e')).join(''))}<div><b style="color:${TYPES.rhombus.color}">菱形</b></div><ul class="props" style="text-align:left"><li>4 條邊相等</li><li>角<b>不是直角</b>（2 個銳角、2 個鈍角）</li><li>2 組對邊平行、2 組對角相等</li></ul></div></div>
+  <div class="pv-key">✅ <b>相同</b>：都是 <b>四邊相等</b>，2 組對邊平行。<br>❗ <b>不同</b>：正方形 <b>有 4 個直角</b>；菱形 <b>沒有直角</b>。<br>📌 請記着：<b>正方形和菱形都是四邊相等的！</b></div></div>
+ <div class="card"><h3>✏️ 填一填</h3><div id="sd-fill"></div></div>
+ <div class="card"><h3>✅ 在正確的格內加 ✓</h3><div id="sd-table"></div></div>
+ <div class="card"><h3>🗂️ 分一分：這句話說的是哪個圖形？</h3><div id="sd-sort"></div></div>
+ <div class="card"><h3>🎮 認一認：正方形、菱形，還是都不是？</h3><p class="tip">轉了方向的正方形仍然是正方形，不要和菱形混淆！看看有沒有直角。</p><div id="sd-quiz"></div></div>`;
+ main.append(sec);
+ tiltSquash(document.getElementById('sd-tilt'));
+ makeFill(document.getElementById('sd-fill'),[
+  {t:'正方形有 [] 條邊相等，4 個角都 [] 直角，有 [] 組對邊平行。',o:[N4,YN,N4],a:['4','是','2']},
+  {t:'菱形有 [] 條邊相等，4 個角都 [] 直角，有 [] 組對邊平行。',o:[N4,YN,N4],a:['4','不是','2']},
+  {t:'把正方形按扁，4 條邊的長度 [] 改變，但角 [] 再是直角，所以變成了 []。',o:[['會','不會'],['會','不'],['菱形','梯形']],a:['不會','不','菱形']}]);
+ checkTable(document.getElementById('sd-table'),['四邊相等','有 4 個直角','沒有直角','2 組對邊平行'],[['正方形',svgShape(sq,TYPES.square.color,60),[true,true,false,true]],['菱形',svgShape(rh,TYPES.rhombus.color,60),[true,false,true,true]]]);
+ sortActivity(document.getElementById('sd-sort'),[['L','只有正方形',TYPES.square.color],['B','兩個都有','#2a4365'],['R','只有菱形',TYPES.rhombus.color]],
+  [['4 個角都是直角','L'],['4 條邊的長度都相等','B'],['2 組對邊平行','B'],['角不是直角，有 2 個銳角和 2 個鈍角','R'],['有 4 條邊、4 個角','B'],['對邊相等','B'],['把正方形按扁就會變成它','R'],['可以用 4 枝一樣長的飲管拼出來','B']]);
+ const sdQ=()=>shuffle(['square','square','square','rhombus','rhombus','rhombus','rect','kite','para']).slice(0,8).map(t=>({html:svgShape(genShape(t),'#4a5568',210),answer:t==='square'?'正方形':t==='rhombus'?'菱形':'都不是',explain:`這是${TYPES[t].name}：${TYPES[t].desc}。`}));
+ makeQuiz(document.getElementById('sd-quiz'),sdQ(),{choices:['正方形','菱形','都不是'],regen:sdQ});
+}
+
 /* ================= 首頁 & 預習 ================= */
 function buildHome(){
  const sec=el('section',{class:'tab active',id:'tab-home'});
  const banner=`<svg viewBox="0 0 900 170" class="banner">${ORDER.map((t,i)=>{const p=rot(SHAPES[t].example,0).map(([x,y])=>[x*0.55+75+i*150,y*0.55+70]);return `<polygon points="${ptsStr(p)}" fill="${TYPES[t].color}" fill-opacity=".35" stroke="${TYPES[t].color}" stroke-width="4"/><text x="${75+i*150}" y="150" text-anchor="middle" font-size="20" fill="#2a4365">${TYPES[t].name}</text>`;}).join('')}</svg>`;
  sec.innerHTML=`<div class="card">${banner}</div>
- <div class="grid2"><div class="card"><h3>🎯 學習重點</h3><ol class="props"><li>認識常見的四邊形（預習）</li><li>認識四邊形的特性</li><li>用不同的方法製作四邊形（釘板、飲管、剪紙、七巧板）</li></ol>
- <p class="tip">共通能力：溝通能力、慎思明辨能力、解決問題能力<br>價值觀教育／國民及國安教育（文化安全）：認識風箏源於中國、屬國家級非物質文化遺產，欣賞中華文化。</p></div>
- <div class="card"><h3>🧭 網頁使用方法</h3><ul class="props" style="font-size:17px"><li>先到「預習」認識六種四邊形和對邊、對角等名詞。</li><li>再逐一進入六個形狀分頁：觀察特性 → 填一填 → 分一分 → 畫一畫。</li><li>「釘板製作」和「七巧板」有動手拼砌的任務。</li><li>「生活中的四邊形」和「風箏與非遺」有圖例講解和練習。</li><li>最後用「特性比較」表做總結。</li></ul>
+ <div class="grid2"><div class="card"><h3>🎯 學習重點</h3><ol class="props"><li>認識常見的四邊形（預習）</li><li>認識四邊形的特性</li><li>分辨正方形及長方形、正方形及菱形的相同及不同之處</li><li>用不同的方法製作四邊形（方格紙、釘板、飲管、剪紙、七巧板）</li></ol>
+ <p class="tip">共通能力：溝通能力、慎思明辨能力、解決問題能力<br>價值觀教育／國民及國安教育（文化安全）：認識風箏源於中國、屬國家級非物質文化遺產；欣賞中國傳統建築窗櫺中的幾何美。</p></div>
+ <div class="card"><h3>🧭 網頁使用方法</h3><ul class="props" style="font-size:17px"><li>先到「預習」認識六種四邊形和對邊、對角等名詞，再看「組與條」。</li><li>逐一進入六個形狀分頁：觀察特性 → 填一填 → 分一分 → 畫一畫。</li><li>兩個「比一比」分頁：正方形 vs 長方形、正方形 vs 菱形。</li><li>「方格紙」、「釘板製作」和「七巧板」有動手畫圖和拼砌的任務。</li><li>「生活中的四邊形」、「中國傳統窗櫺」和「風箏與非遺」有圖例講解和練習。</li><li>最後用「特性比較」表做總結。</li></ul>
  <a class="btn" target="_blank" rel="noopener" href="https://emm.edcity.hk/media/0_8esmfxit">📺 教育電視：四邊形(一)</a></div></div>
- <div class="card"><h3>📚 參考</h3><p class="tip">大衛·阿德勒（2020）：《四邊形玩幾何 STEAM 數學繪本》，小魯文化事業股份有限公司。｜ 學習範疇：圖形與空間　學習單元：平面圖形</p></div>`;
+ <div class="card"><h3>📚 參考</h3><p class="tip">校本教材《認識常見的四邊形》（高小 3B）。｜ 大衛·阿德勒（2020）：《四邊形玩幾何 STEAM 數學繪本》，小魯文化事業股份有限公司。｜ 張添景（2011）：《魔法數學一點通 7》，台灣，酷學堂。｜ 學習範疇：圖形與空間　學習單元：平面圖形</p></div>`;
  main.append(sec);
 }
 function buildPre(){
@@ -437,7 +649,6 @@ function pvArc(P,u1,u2,r){
  for(let i=0;i<=n;i++){const a=a1+d*i/n;s+=` L${(P[0]+r*Math.cos(a)).toFixed(1)},${(P[1]+r*Math.sin(a)).toFixed(1)}`;}
  return s+' Z';
 }
-/* 畫有 A、B、C、D 標記的四邊形；o.pick = 'side'|'angle'|'vertex'|null，o.onPick(key) */
 function pvDraw(svg,shape,o={}){
  const P=PV_SHAPES[shape];svg.innerHTML='';svg.setAttribute('viewBox','0 0 380 300');
  o.sideCls=o.sideCls||{};o.angCls=o.angCls||{};o.vtxCls=o.vtxCls||{};
@@ -465,7 +676,6 @@ function pvDraw(svg,shape,o={}){
   svg.appendChild(svgEl('text',{x:p[0]+dx/l*28,y:p[1]+dy/l*28+8,'text-anchor':'middle',class:'pv-lbl'},PV_NAMES[i]));
  });
 }
-/* 講解區的互動示範 */
 function pvDemo(svg,note,kind){
  let st={};
  const draw=()=>pvDraw(svg,'gen',Object.assign({pick:kind==='diag'?'vertex':kind==='angle'?'angle':'side',onPick:choose,angles:kind==='angle'},st));
@@ -485,7 +695,6 @@ function pvDemo(svg,note,kind){
  if(kind==='diag')bindBoth();
  draw();
 }
-/* 預習練習引擎：支援 mc（選擇）、side/angle/vertex（單選點圖）、multi-side/multi-angle（多選點圖）、diag（點兩個頂點畫對角線） */
 function pvQuiz(root,qs){
  let i=0,score=0,tries=0,sel=[],locked=false,reveal=false;
  const kindOf=m=>m.includes('side')?'side':m.includes('angle')?'angle':(m==='vertex'||m==='diag')?'vertex':null;
@@ -617,8 +826,6 @@ const GC_COL=['#e53e3e','#3182ce','#38a169','#805ad5'];
 const GC_PTS=[[60,60],[300,50],[320,240],[50,250]];
 function gcSideLine(P,i,attrs){const a=P[i],b=P[(i+1)%4];return `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" ${attrs}/>`;}
 function gcSector(P,i,r){const p=P[i],a=P[(i+3)%4],b=P[(i+1)%4];const ua=Math.atan2(a[1]-p[1],a[0]-p[0]),ub=Math.atan2(b[1]-p[1],b[0]-p[0]);let d=ub-ua;while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;let s=`M${p[0]},${p[1]}`;for(let k=0;k<=12;k++){const t=ua+d*k/12;s+=` L${(p[0]+r*Math.cos(t)).toFixed(1)},${(p[1]+r*Math.sin(t)).toFixed(1)}`;}return s+'Z';}
-
-/* 數一數：逐條／逐組亮起 */
 function gcCounter(container){
  const P=GC_PTS,C=centroid(P),box=el('div'),cnt=el('div',{class:'gc-cnt'}),bar=el('div',{class:'btns gc-bar',style:'justify-content:center'});let timer=null;
  const MODES=[
@@ -636,8 +843,6 @@ function gcCounter(container){
  MODES.forEach(M=>{const b=el('button',{class:'btn ghost'},M[0]);b.onclick=()=>{clearInterval(timer);bar.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));let k=0;draw(M,0);timer=setInterval(()=>{k++;draw(M,k);if(k>=M[1].length)clearInterval(timer);},800);};bar.append(b);});
  container.append(bar,box,cnt);draw(MODES[0],0);
 }
-
-/* 配一配：學生自己把兩條邊／兩個角配成一組 */
 function gcPairing(container){
  const P=GC_PTS,C=centroid(P),N=['A','B','C','D'];
  const bar=el('div',{class:'btns gc-bar',style:'justify-content:center'}),box=el('div'),cnt=el('div',{class:'gc-cnt'}),fb=el('div',{class:'feedback'});
@@ -662,7 +867,6 @@ function gcPairing(container){
  const r=el('button',{class:'btn'},'🔄 重設');r.onclick=()=>{sel=[];groups=[];fb.innerHTML='';render();};bar.append(r);
  container.append(bar,box,cnt,fb);bar.children[0].click();
 }
-
 const GC_FILL=[
  {t:'四邊形有 [] 條邊，兩兩相對，可以配成 [] 組對邊。',o:[N4,N4],a:['4','2']},
  {t:'四邊形有 [] 個角，可以配成 [] 組對角。',o:[N4,N4],a:['4','2']},
@@ -790,7 +994,7 @@ class Tangram{
   this.svg.innerHTML=s;}
  check(){const t=this.task,polys=t.use.map(id=>this.absPts(this.pieces.find(p=>p.id===id)));
   const all=[t.outline,...polys];const xs=all.flat().map(p=>p[0]),ys=all.flat().map(p=>p[1]);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
-  if(x1-x0>7||y1-y0>7)return; // 部件離目標太遠，暫不檢查
+  if(x1-x0>7||y1-y0>7)return;
   let inT=0,cov=0,over=0;const st=0.08;for(let x=x0;x<=x1;x+=st)for(let y=y0;y<=y1;y+=st){const it=pip([x,y],t.outline),ip=polys.some(P=>pip([x,y],P));if(it){inT++;if(ip)cov++;}else if(ip)over++;}
   if(cov/inT>0.93&&over/inT<0.07){this.msg.innerHTML=`<div class="ok">🎉 太好了！你用 ${t.use.join('、')} 拼成了 <b>${t.name}</b>！${this.taskIdx<TAN_TASKS.length-1?'試試下一個任務。':'全部任務完成！'}</div>`;}
   else if(cov/inT>0.5){this.msg.innerHTML=`<div class="bad">接近了！還有部分未填滿或超出了框框，試試旋轉、翻轉或移動部件。</div>`;}}
@@ -839,6 +1043,82 @@ function buildLife(){
  const sec=el('section',{class:'tab',id:'tab-life'});sec.innerHTML=`<h2>🏙️ 日常生活中的四邊形</h2><p class="tip">在我們日常生活中，有很多物件的面都是四邊形。先看圖例（紅色虛線是物品的外圍），再做練習。</p><div id="life-gallery"></div><div class="card"><h3>🎮 練習：這件物件像哪種四邊形？</h3><p class="tip">共 ${LIFE_ITEMS.length} 題，隨機次序，第 1–2 題有紅色框提示，之後要自己觀察！</p><div id="life-quiz"></div></div><div class="card"><h3>🏫 課堂活動</h3><p>在課室找出不同的四邊形物件（例如：窗、門、黑板、地磚、書、間尺……），說說它像哪種四邊形，為甚麼？</p><p class="tip">家課：在家中找一件四邊形物件拍照或畫下來，圈出它像（長方形／正方形／梯形／平行四邊形／菱形／鷂形）。</p></div>`;main.append(sec);
  const g=document.getElementById('life-gallery');ORDER.forEach(t=>{const c=el('div',{class:'card'});c.innerHTML=`<h3 style="color:${TYPES[t].color}">${TYPES[t].name}　<span style="font-size:15px;color:#555">${TYPES[t].desc}</span></h3>`;const grid=el('div',{class:'life-grid'});LIFE_ITEMS.filter(x=>x.type===t).forEach(it=>grid.append(el('div',{class:'life-item'},`${itemSVG(it,true)}<div class="nm">${it.name}</div><div class="why">${it.why}</div>`)));c.append(grid);g.append(c);});
  makeQuiz(document.getElementById('life-quiz'),lifeQuestions(),{choices:ORDER.map(t=>TYPES[t].name),regen:lifeQuestions});
+}
+
+/* ================= 中國傳統建築的窗櫺 ================= */
+const LW=200;let latId=0;
+function latWindow(inner,hl='',size=260){const id='lc'+(latId++);return `<svg viewBox="-14 -14 ${LW+28} ${LW+28}" class="win-svg" style="max-width:${size}px"><defs><clipPath id="${id}"><rect x="0" y="0" width="${LW}" height="${LW}"/></clipPath></defs><rect x="-14" y="-14" width="${LW+28}" height="${LW+28}" rx="6" fill="#8b5a2b"/><rect x="0" y="0" width="${LW}" height="${LW}" fill="#fff8e7"/><g clip-path="url(#${id})">${hl}<g fill="none" stroke="#5a3a1a" stroke-width="5" stroke-linecap="square">${inner}</g></g></svg>`;}
+const LL=(a,b,c,d)=>`<line x1="${a}" y1="${b}" x2="${c}" y2="${d}"/>`;
+const LAT={
+ zhiling:{name:'直欞窗',shape:'rect',hasN:true,min:3,max:8,def:5,desc:'最古老的窗櫺樣式：一排直立的木條（「欞」），把窗分成一條條狹長的<b>長方形</b>。',meaning:'簡單樸實，常見於古代民居和寺廟。',
+  draw(n){let s='';for(let i=1;i<n;i++){const x=LW*i/n;s+=LL(x,0,x,LW);}return s;},
+  hl(n){return `<rect x="${LW/n}" y="0" width="${LW/n}" height="${LW}" fill="#f6ad55" fill-opacity=".7"/>`;},
+  count(n){return `${n} 個長方形`;}},
+ fangge:{name:'方格窗',shape:'square',hasN:true,min:3,max:8,def:4,desc:'橫直木條交織成一格一格的<b>正方形</b>，整齊方正。',meaning:'方格窗簡潔大方，宋代以後十分流行。',
+  draw(n){let s='';for(let i=1;i<n;i++){const x=LW*i/n;s+=LL(x,0,x,LW)+LL(0,x,LW,x);}return s;},
+  hl(n){const c=LW/n;return `<rect x="${c}" y="${c}" width="${c}" height="${c}" fill="#f6ad55" fill-opacity=".7"/>`;},
+  count(n){return `${n} × ${n} ＝ ${n*n} 個正方形`;}},
+ xiefang:{name:'斜方格（菱格窗）',shape:'rhombus',hasN:true,min:3,max:7,def:4,desc:'兩組斜放的木條交織，格子是一個個<b>菱形</b>——4 條邊相等，但沒有直角。',meaning:'像菱花一樣美麗；故宮的門窗常用更複雜的「菱花」圖案。',
+  draw(n){const r=0.6,d=LW/n,c1m=LW/2+r*LW/2,c2m=LW/2-r*LW/2;let s='';for(let k=-n-3;k<=n+3;k++){const c1=c1m+(k+0.5)*d,c2=c2m+(k+0.5)*d;s+=LL(c1,0,c1-r*LW,LW)+LL(c2,0,c2+r*LW,LW);}return s;},
+  hl(n){const r=0.6,d=LW/n,c1m=LW/2+r*LW/2,c2m=LW/2-r*LW/2;const pts=[[c1m-d/2,c2m-d/2],[c1m+d/2,c2m-d/2],[c1m+d/2,c2m+d/2],[c1m-d/2,c2m+d/2]].map(([c1,c2])=>[(c1+c2)/2,(c1-c2)/(2*r)]);return `<polygon points="${ptsStr(pts)}" fill="#f6ad55" fill-opacity=".7"/>`;},
+  count(){return '許多個菱形';}},
+ bubu:{name:'步步錦',shape:'rect',hasN:false,desc:'長短不同的木條互相垂直相接，一步一步向內收，拼成大小不同的<b>長方形</b>和<b>正方形</b>。',meaning:'「步步錦」寓意步步高升、前程似錦，是明清時期很受歡迎的圖案。',
+  draw(){return LL(50,50,150,50)+LL(150,50,150,150)+LL(150,150,50,150)+LL(50,150,50,50)+LL(100,0,100,50)+LL(0,100,50,100)+LL(100,150,100,200)+LL(150,100,200,100)+LL(75,75,125,75)+LL(125,75,125,125)+LL(125,125,75,125)+LL(75,125,75,75)+LL(100,50,100,75)+LL(50,100,75,100)+LL(100,125,100,150)+LL(125,100,150,100);},
+  hl(){return `<rect x="100" y="0" width="100" height="50" fill="#f6ad55" fill-opacity=".7"/><rect x="75" y="75" width="50" height="50" fill="#68d391" fill-opacity=".7"/>`;},
+  qhl:`<rect x="100" y="0" width="100" height="50" fill="#f6ad55" fill-opacity=".7"/>`,
+  count(){return '長方形（橙色）和正方形（綠色）';}},
+ bing:{name:'冰裂紋',shape:'general',hasN:false,desc:'像冰塊裂開的紋理，每一塊的形狀都不一樣：有<b>四邊形</b>，也有三角形和五邊形。',meaning:'寓意冰雪消融、春天來臨；也提醒讀書人「十年寒窗」要刻苦。',
+  draw(){return LL(0,70,70,60)+LL(70,60,55,0)+LL(70,60,140,90)+LL(140,90,200,40)+LL(140,90,150,170)+LL(150,170,200,185)+LL(150,170,90,150)+LL(90,150,70,60)+LL(90,150,0,165)+LL(90,150,110,200)+LL(150,170,135,200);},
+  hl(){return `<polygon points="70,60 140,90 150,170 90,150" fill="#f6ad55" fill-opacity=".7"/>`;},
+  qhl:`<polygon points="70,60 140,90 150,170 90,150" fill="#f6ad55" fill-opacity=".7"/>`,
+  count(){return '一個「一般四邊形」（橙色）——四條邊、四個角都不相等';}},
+ gui:{name:'龜背錦',shape:'none',hasN:false,desc:'像烏龜背上的花紋，格子是<b>六邊形</b>，<b>不是</b>四邊形！',meaning:'龜象徵長壽，所以「龜背錦」寓意健康長壽。',
+  hex(row,col){const r=20,h=r*Math.sqrt(3)/2;const cx=col*3*r+(row%2?1.5*r:0),cy=row*h;return [0,1,2,3,4,5].map(k=>{const a=Math.PI/3*k;return [cx+r*Math.cos(a),cy+r*Math.sin(a)];});},
+  draw(){let s='';for(let row=-1;row<14;row++)for(let col=-1;col<5;col++)s+=`<polygon points="${ptsStr(this.hex(row,col))}"/>`;return s;},
+  hl(){return `<polygon points="${ptsStr(this.hex(5,1))}" fill="#f6ad55" fill-opacity=".7"/>`;},
+  count(){return '六邊形——不是四邊形！';}}
+};
+function latDesigner(container){
+ const bar=el('div',{class:'btns'}),box=el('div',{style:'flex:1 1 260px'}),ctrl=el('div',{style:'flex:1 1 260px'}),wrap=el('div',{class:'squash'});
+ const slider=el('input',{type:'range',class:'slider'}),sl=el('div'),txt=el('div',{class:'squash-txt'});let key='zhiling',hl=false;
+ const hlBtn=el('button',{class:'btn ghost'},'🔶 標示其中一個格子');hlBtn.onclick=()=>{hl=!hl;draw();};
+ function draw(){const p=LAT[key];const n=p.hasN?+slider.value:0;sl.style.display=p.hasN?'':'none';box.innerHTML=latWindow(p.draw(n),hl?p.hl(n):'',320);
+  txt.innerHTML=`<b>${p.name}</b><br>${p.desc}<br><span class="tip">${p.meaning}</span>${hl?`<br>🔶 標示的格子：<b>${p.count(n)}</b>`:''}`;}
+ Object.entries(LAT).forEach(([k,p])=>{const b=el('button',{class:'btn ghost'},p.name);b.onclick=()=>{key=k;bar.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));if(p.hasN){slider.min=p.min;slider.max=p.max;slider.value=p.def;}draw();};bar.append(b);});
+ slider.oninput=draw;sl.innerHTML='<b>🪵 木條數目：</b><br>';sl.append(slider);ctrl.append(sl,hlBtn,txt);wrap.append(box,ctrl);container.append(bar,wrap);bar.children[0].click();
+}
+const LAT_KQ=[
+ {q:'傳統窗櫺主要是用甚麼材料做的？',o:['木','玻璃','鐵','塑膠'],a:'木',e:'窗櫺是木匠用木條拼接而成的，是「小木作」的手藝。'},
+ {q:'古時沒有玻璃，窗櫺上會糊上甚麼？',o:['窗紙','毛毯','膠片','木板'],a:'窗紙',e:'糊上窗紙或薄紗，既透光又擋風。'},
+ {q:'以下哪一項<u>不是</u>窗櫺的用途？',o:['透光','通風','裝飾','煮食'],a:'煮食',e:'窗櫺可以透光、通風、擋風，木條的圖案更是漂亮的裝飾。'},
+ {q:'「步步錦」圖案有甚麼寓意？',o:['步步高升','風調雨順','早生貴子','年年有魚'],a:'步步高升',e:'木條一步一步向內收，寓意步步高升、前程似錦。'},
+ {q:'「龜背錦」的格子是甚麼形狀？',o:['正方形','六邊形','菱形','長方形'],a:'六邊形',e:'像龜背的花紋，是六邊形，不是四邊形。'},
+ {q:'「冰裂紋」窗櫺的每一塊格子……',o:['形狀都一樣','形狀都不一樣','都是正方形','都是圓形'],a:'形狀都不一樣',e:'像冰塊裂開，有四邊形、三角形、五邊形，每塊都不同。'},
+ {q:'有很多精美窗櫺的蘇州古典園林，在 1997 年列入了甚麼名錄？',o:['世界文化遺產','奧運項目','世界自然遺產','國家公園'],a:'世界文化遺產',e:'蘇州園林於 1997 年列入聯合國教科文組織《世界遺產名錄》。'},
+ {q:'2009 年，「中國傳統木結構建築營造技藝」列入了甚麼名錄？',o:['人類非物質文化遺產代表作名錄','世界自然遺產名錄','世界記憶名錄'],a:'人類非物質文化遺產代表作名錄',e:'窗櫺就是這項木構建築技藝的一部分，由聯合國教科文組織列入名錄。'}
+];
+function latQuestions(){
+ const sq=Object.entries(LAT).map(([k,p])=>{const n=p.hasN?pick([3,4,5,6].filter(x=>x>=p.min&&x<=p.max)):0;const hl=p.qhl||'';
+  return {html:`<p>${hl?'橙色標示的格子是甚麼形狀？':'這個窗櫺的格子主要是哪種圖形？'}</p>${latWindow(p.draw(n),hl,230)}`,choices:['長方形','正方形','菱形','一般四邊形','不是四邊形'],answer:p.shape==='none'?'不是四邊形':TYPES[p.shape].name,explain:`這是${p.name}：${p.desc.replace(/<[^>]+>/g,'')}`};});
+ const kq=LAT_KQ.map(x=>({html:`<p style="font-size:21px">${x.q}</p>`,choices:x.o,answer:x.a,explain:x.e}));
+ return shuffle([...sq,...kq]);
+}
+function buildLattice(){
+ const sec=el('section',{class:'tab',id:'tab-lattice'});
+ sec.innerHTML=`<h2>🏮 中國傳統建築中的窗櫺</h2>
+ <div class="card"><div class="grid2"><div>
+  <h3>甚麼是窗櫺？</h3><p style="font-size:19px">窗櫺（也叫窗格、花窗）是中國傳統建築窗戶上的<b>木格子</b>。古時沒有玻璃，工匠把木條拼成一格一格的圖案，再糊上<b>窗紙</b>或薄紗，既能<b>透光、通風</b>，又能擋風遮雨，木條的圖案更是精美的<b>裝飾</b>。</p>
+  <p style="font-size:19px">仔細看，窗櫺裏藏着很多我們學過的圖形：<b style="color:${TYPES.rect.color}">長方形</b>、<b style="color:${TYPES.square.color}">正方形</b>、<b style="color:${TYPES.rhombus.color}">菱形</b>……工匠用直尺和墨斗把木條切得又直又準，格子才會整齊好看——這和我們在方格紙上畫四邊形的道理一樣！</p></div>
+  <div>${latWindow(LAT.bubu.draw(),LAT.bubu.hl(),260)}<p class="tip" style="text-align:center">步步錦窗櫺：橙色是長方形，綠色是正方形</p></div></div>
+  <div class="pv-key">🏛️ <b>文化小知識</b><br>• 北京故宮、<b>蘇州園林</b>（1997 年列入世界文化遺產）和各地的古民居、寺廟、祠堂，都可以看到精美的窗櫺；香港一些古老的祠堂、書室和圍村屋也保留了傳統木窗格。<br>• 窗櫺是木匠「小木作」的手藝。2009 年，「<b>中國傳統木結構建築營造技藝</b>」列入聯合國教科文組織《<b>人類非物質文化遺產代表作名錄</b>》。<br>• 很多圖案都有吉祥的寓意：步步錦——步步高升；龜背錦——長壽；冰裂紋——寒窗苦讀、冰雪消融。</div></div>
+ <div class="card"><h3>👀 常見的窗櫺圖案（橙色標示其中一個格子）</h3><div class="lat-grid" id="lat-gallery"></div></div>
+ <div class="card"><h3>🎨 互動：設計你的窗櫺</h3><p class="tip">選擇圖案，拉動滑桿改變木條數目，再按「標示」看看格子是甚麼圖形。</p><div id="lat-design"></div></div>
+ <div class="card"><h3>📝 練習：窗櫺知多少？</h3><p class="tip">有圖形題，也有文化知識題。</p><div id="lat-quiz"></div></div>
+ <div class="card"><h3>✂️ 動手做</h3><p>用飲管、牙籤或紙條，在方格紙上設計一個自己的窗櫺圖案，數一數：你用了多少個長方形？多少個正方形？有沒有菱形？</p><p class="tip">家課：旅行或參觀古蹟時，留意建築物的窗，拍下有四邊形圖案的窗櫺，和同學分享。</p></div>`;
+ main.append(sec);
+ const g=document.getElementById('lat-gallery');Object.values(LAT).forEach(p=>{const n=p.hasN?p.def:0;g.append(el('div',{class:'lat-item'},`${latWindow(p.draw(n),p.hl(n),200)}<div style="font-weight:bold">${p.name}</div><div style="font-size:15px;color:#444">${p.desc}</div><div class="badge">${p.shape==='none'?'不是四邊形':'主要是'+TYPES[p.shape].name}</div>`));});
+ latDesigner(document.getElementById('lat-design'));
+ makeQuiz(document.getElementById('lat-quiz'),latQuestions(),{regen:latQuestions});
 }
 
 /* ================= 風箏與非遺 ================= */
@@ -901,16 +1181,19 @@ function buildSum(){
 }
 
 /* ================= 啟動 ================= */
-/* 每個分頁獨立建立：即使某一頁出錯，其他分頁仍可正常顯示，不會整頁空白 */
 const safe=(fn,label)=>{try{fn();}catch(e){console.error('建立「'+label+'」時出錯：',e);}};
 safe(buildHome,'首頁');
 safe(buildPre,'預習');
 safe(buildPreDetail,'預習：對邊／對角／對角線／鄰邊');
 safe(buildPairs,'組與條');
 ORDER.forEach(t=>safe(()=>buildShapePage(t),TYPES[t].name));
+safe(buildCmpSR,'正方形 vs 長方形');
+safe(buildCmpSD,'正方形 vs 菱形');
+safe(buildGrid,'方格紙畫四邊形');
 safe(buildPeg,'釘板製作');
 safe(buildTangram,'七巧板');
 safe(buildLife,'生活中的四邊形');
+safe(buildLattice,'中國傳統窗櫺');
 safe(buildKites,'風箏與非遺');
 safe(buildSum,'特性比較');
 goTab('home');
