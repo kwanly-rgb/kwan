@@ -2,7 +2,7 @@
 <html lang="zh-HK">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>平行四邊形剪拼長方形互動探究工具</title>
 <style>
   :root {
@@ -12,10 +12,8 @@
     --base-purple-light: #f3e5f5;
     --height-green: #2e7d32;
     --height-green-light: #e8f5e9;
-    --part-a: #b3e5fc;
-    --part-a-border: #0288d1;
-    --part-b: #ffe0b2;
-    --part-b-border: #f57c00;
+    --cut-pink: #e91e63;
+    --cut-pink-hover: #c2185b;
     --text-main: #263238;
     --success: #2e7d32;
     --error: #c62828;
@@ -36,8 +34,27 @@
   .badge-green { background: var(--height-green-light); color: var(--height-green); border: 2px solid var(--height-green); }
 
   /* 主畫布區 */
-  .canvas-wrapper { position: relative; width: 100%; background: #ffffff; border: 2px solid #cfd8dc; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
-  svg { display: block; width: 100%; height: auto; }
+  .canvas-wrapper { position: relative; width: 100%; background: #ffffff; border: 2px solid #cfd8dc; border-radius: 12px; overflow: hidden; margin-bottom: 20px; touch-action: none; }
+  svg { display: block; width: 100%; height: auto; user-select: none; }
+
+  /* 拖曳手柄動畫效果 */
+  .drag-handle-group { cursor: ew-resize; touch-action: none; }
+  .drag-pulse-ring {
+    animation: pulseGlow 2s infinite;
+    transform-origin: center;
+  }
+  @keyframes pulseGlow {
+    0% { r: 9px; opacity: 0.8; stroke-width: 2px; }
+    50% { r: 16px; opacity: 0.3; stroke-width: 4px; }
+    100% { r: 9px; opacity: 0.8; stroke-width: 2px; }
+  }
+  .drag-handle-group:active .drag-pulse-ring,
+  .drag-handle-group.dragging .drag-pulse-ring {
+    animation: none;
+    r: 18px;
+    opacity: 0.4;
+    fill: var(--cut-pink);
+  }
 
   /* 操作盤 */
   .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
@@ -48,8 +65,8 @@
   button {
     font-size: 15px; font-weight: bold; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   }
-  .btn-cut { background: #e91e63; color: white; }
-  .btn-cut:hover { background: #c2185b; }
+  .btn-cut { background: var(--cut-pink); color: white; }
+  .btn-cut:hover { background: var(--cut-pink-hover); }
   .btn-move { background: var(--height-green); color: white; }
   .btn-move:hover { background: #1b5e20; }
   .btn-secondary { background: #eceff1; color: #37474f; border: 1px solid #cfd8dc; }
@@ -91,7 +108,7 @@
 <div class="container">
   <header>
     <h1>📐 平行四邊形剪拼長方形互動學習工具</h1>
-    <p class="subtitle">剪開 ➔ 平移 ➔ 拼貼 ➔ 發現面積公式</p>
+    <p class="subtitle">拖曳切點 ➔ 一刀剪開 ➔ 平移拼貼 ➔ 發現面積公式</p>
   </header>
 
   <!-- 顏色提示圖例 -->
@@ -140,20 +157,17 @@
         <line id="cutLine" x1="300" y1="270" x2="300" y2="120" stroke="#2e7d32" stroke-width="3" stroke-dasharray="6,4" />
         <path id="rightAngleMark" d="M 312 270 L 312 258 L 300 258" fill="none" stroke="#2e7d32" stroke-width="2" />
         <text id="scissorsIcon" x="300" y="195" font-size="20" text-anchor="middle" dominant-baseline="central">✂️</text>
-        <circle id="cutPointCircle" cx="300" cy="270" r="7" fill="#2e7d32" stroke="#ffffff" stroke-width="2" />
       </g>
 
       <!-- 紫色底邊標註線（底邊） -->
       <g id="baseDimensionGroup">
         <line id="baseLine" x1="150" y1="270" x2="390" y2="270" stroke="#8e24aa" stroke-width="4.5" />
-        <!-- 底邊雙向尺寸線 -->
         <line x1="150" y1="295" x2="390" y2="295" stroke="#8e24aa" stroke-width="2" marker-start="url(#arrowPurple)" marker-end="url(#arrowPurple)" />
         <text x="270" y="315" fill="#8e24aa" font-weight="bold" font-size="15" text-anchor="middle">底 ＝ 8 cm（數一數：共 8 格）</text>
       </g>
 
       <!-- 綠色垂直高標註線（高） -->
       <g id="heightDimensionGroup">
-        <!-- 側邊垂直高尺寸線 -->
         <line x1="110" y1="270" x2="110" y2="120" stroke="#2e7d32" stroke-width="2" marker-start="url(#arrowGreen)" marker-end="url(#arrowGreen)" />
         <text x="70" y="200" fill="#2e7d32" font-weight="bold" font-size="15" text-anchor="middle">高 ＝ 5 cm</text>
         <text x="70" y="220" fill="#2e7d32" font-size="12" text-anchor="middle">（共 5 格）</text>
@@ -164,20 +178,35 @@
       <text x="400" y="265" font-size="15" font-weight="bold" fill="#78909c">B</text>
       <text x="490" y="115" font-size="15" font-weight="bold" fill="#78909c">C</text>
       <text x="230" y="115" font-size="15" font-weight="bold" fill="#78909c">D</text>
+
+      <!-- ✨ 直接拖拉切點控制群組（支援滑鼠與觸控） ✨ -->
+      <g id="dragHandleGroup" class="drag-handle-group">
+        <!-- 提示小氣泡標籤 -->
+        <g id="handleBadge" transform="translate(300, 245)">
+          <rect x="-38" y="-22" width="76" height="20" rx="10" fill="#e91e63" />
+          <text x="0" y="-8" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">👈 拖我 👉</text>
+        </g>
+        <!-- 動態呼吸外環 -->
+        <circle id="pulseRing" class="drag-pulse-ring" cx="300" cy="270" r="10" fill="none" stroke="#e91e63" stroke-width="2" />
+        <!-- 實體可見切點按鈕 -->
+        <circle id="cutPointCircle" cx="300" cy="270" r="9" fill="#e91e63" stroke="#ffffff" stroke-width="2.5" />
+        <!-- 擴大感應區域（半徑 25px 隱形圓形，方便手指精準抓取） -->
+        <circle id="dragHitArea" cx="300" cy="270" r="25" fill="transparent" />
+      </g>
     </svg>
   </div>
 
   <!-- 操作面板 -->
   <div class="control-grid">
     <div class="card">
-      <div class="card-title">📍 步驟一：選擇底邊垂直切點</div>
+      <div class="card-title">📍 步驟一：選擇底邊垂直切點（可直接在圖上拖曳點）</div>
       <div class="btn-group" style="margin-bottom: 12px;">
         <button class="btn-secondary" onclick="setPresetCut(240)">📐 頂點垂直（三角形）</button>
         <button class="btn-secondary" onclick="setPresetCut(300)">✂️ 底邊中點（梯形）</button>
       </div>
       <div class="slider-box">
         <div class="slider-label">
-          <span>拖曳切點位置：</span>
+          <span>切點精確位置：</span>
           <span id="cutPosLabel" style="color:var(--primary);">底邊上的任意點</span>
         </div>
         <input type="range" id="cutSlider" min="240" max="390" value="300" oninput="onCutSliderChange(this.value)">
@@ -317,6 +346,7 @@
   let cutX = 300;
   let isCut = false;
   let moveProgress = 0;
+  let isDragging = false;
 
   function updateShapes() {
     cutX = Math.max(X_D, Math.min(X_B, cutX));
@@ -339,11 +369,18 @@
       cutLine.setAttribute('y2', Y_TOP);
     }
 
+    // 拖曳切點手柄位置更新
     const circle = document.getElementById('cutPointCircle');
-    if (circle) {
-      circle.setAttribute('cx', cutX);
-      circle.setAttribute('cy', Y_BOTTOM);
-    }
+    if (circle) circle.setAttribute('cx', cutX);
+
+    const hitArea = document.getElementById('dragHitArea');
+    if (hitArea) hitArea.setAttribute('cx', cutX);
+
+    const pulseRing = document.getElementById('pulseRing');
+    if (pulseRing) pulseRing.setAttribute('cx', cutX);
+
+    const badge = document.getElementById('handleBadge');
+    if (badge) badge.setAttribute('transform', `translate(${cutX}, 245)`);
 
     const scissors = document.getElementById('scissorsIcon');
     if (scissors) {
@@ -375,6 +412,52 @@
     if (cutGroup) {
       cutGroup.style.opacity = isCut ? Math.max(0, 1 - moveProgress * 1.5) : 1;
     }
+  }
+
+  /* 拖曳手柄互動邏輯（支援 Mouse & Touch / Pointer Events） */
+  function initDragHandlers() {
+    const handleGroup = document.getElementById('dragHandleGroup');
+    const svg = document.getElementById('svgCanvas');
+
+    // 轉換螢幕座標為 SVG viewBox 內部精確座標
+    function getSVGCoordinates(e) {
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function onPointerDown(e) {
+      if (isCut) resetAll(); // 若正在平移或剪開，直接重置以便重新選切點
+      isDragging = true;
+      handleGroup.classList.add('dragging');
+      handleGroup.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    }
+
+    function onPointerMove(e) {
+      if (!isDragging) return;
+      const coords = getSVGCoordinates(e);
+      let newX = Math.round(coords.x);
+      newX = Math.max(X_D, Math.min(X_B, newX)); // 限制在底邊有效區間
+      cutX = newX;
+      document.getElementById('cutSlider').value = cutX;
+      updateShapes();
+      e.preventDefault();
+    }
+
+    function onPointerUp(e) {
+      if (isDragging) {
+        isDragging = false;
+        handleGroup.classList.remove('dragging');
+        try { handleGroup.releasePointerCapture(e.pointerId); } catch(err){}
+      }
+    }
+
+    handleGroup.addEventListener('pointerdown', onPointerDown);
+    handleGroup.addEventListener('pointermove', onPointerMove);
+    handleGroup.addEventListener('pointerup', onPointerUp);
+    handleGroup.addEventListener('pointercancel', onPointerUp);
   }
 
   function onCutSliderChange(val) {
@@ -512,7 +595,10 @@
 
   // 初始化執行
   updateShapes();
-  document.addEventListener('DOMContentLoaded', updateShapes);
+  document.addEventListener('DOMContentLoaded', () => {
+    updateShapes();
+    initDragHandlers();
+  });
 </script>
 </body>
 </html>
