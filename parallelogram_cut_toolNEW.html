@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>平行四邊形剪拼長方形互動探究工具</title>
+<style>
+  :root {
+    --primary: #1976d2;
+    --primary-light: #e3f2fd;
+    --base-purple: #8e24aa;
+    --base-purple-light: #f3e5f5;
+    --height-green: #2e7d32;
+    --height-green-light: #e8f5e9;
+    --part-a: #b3e5fc;
+    --part-a-border: #0288d1;
+    --part-b: #ffe0b2;
+    --part-b-border: #f57c00;
+    --text-main: #263238;
+    --success: #2e7d32;
+    --error: #c62828;
+  }
+
+  * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif; }
+  body { margin: 0; padding: 16px; background: #f0f4f8; color: var(--text-main); }
+  .container { max-width: 980px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  
+  header { text-align: center; margin-bottom: 16px; }
+  h1 { margin: 0 0 6px 0; font-size: 25px; color: var(--primary); }
+  p.subtitle { margin: 0; font-size: 15px; color: #546e7a; font-weight: bold; }
+
+  /* 色彩圖例卡片 */
+  .color-legend { display: flex; justify-content: center; gap: 20px; margin-bottom: 16px; }
+  .legend-badge { padding: 8px 16px; border-radius: 30px; font-weight: bold; font-size: 15px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+  .badge-purple { background: var(--base-purple-light); color: var(--base-purple); border: 2px solid var(--base-purple); }
+  .badge-green { background: var(--height-green-light); color: var(--height-green); border: 2px solid var(--height-green); }
+
+  /* 主畫布區 */
+  .canvas-wrapper { position: relative; width: 100%; background: #ffffff; border: 2px solid #cfd8dc; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+  svg { display: block; width: 100%; height: auto; }
+
+  /* 操作盤 */
+  .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+  .card-title { font-weight: bold; font-size: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; color: #37474f; }
+
+  .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  button {
+    font-size: 15px; font-weight: bold; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-cut { background: #e91e63; color: white; }
+  .btn-cut:hover { background: #c2185b; }
+  .btn-move { background: var(--height-green); color: white; }
+  .btn-move:hover { background: #1b5e20; }
+  .btn-secondary { background: #eceff1; color: #37474f; border: 1px solid #cfd8dc; }
+  .btn-secondary:hover { background: #cfd8dc; }
+
+  .slider-box { margin-top: 10px; }
+  .slider-label { display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; margin-bottom: 6px; }
+  input[type="range"] { width: 100%; height: 8px; border-radius: 4px; accent-color: var(--primary); cursor: pointer; }
+
+  /* 學生互動練習區（三大任務卡） */
+  .tasks-container { display: flex; flex-direction: column; gap: 16px; }
+  .task-card { background: #ffffff; border: 2px solid #cfd8dc; border-radius: 14px; padding: 18px; transition: all 0.3s; }
+  .task-card.active { border-color: var(--primary); box-shadow: 0 4px 14px rgba(25, 118, 210, 0.12); }
+  .task-header { font-size: 16px; font-weight: bold; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+  
+  .task-body { font-size: 16px; line-height: 1.8; color: #37474f; }
+  .interactive-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
+
+  /* 下拉選單與輸入框樣式（專為平板觸控加大） */
+  select, input[type="number"] {
+    font-size: 16px; font-weight: bold; padding: 6px 12px; border: 2px solid #90a4ae; border-radius: 8px; background: white; color: #263238; cursor: pointer;
+  }
+  select:focus, input[type="number"]:focus { outline: none; border-color: var(--primary); }
+  input[type="number"] { width: 75px; text-align: center; }
+
+  .check-btn { padding: 6px 14px; font-size: 14px; border-radius: 8px; background: var(--primary); color: white; border: none; cursor: pointer; }
+  .feedback-msg { font-size: 15px; font-weight: bold; margin-left: 8px; }
+  .feedback-success { color: var(--success); }
+  .feedback-error { color: var(--error); }
+
+  .tag-purple-text { color: var(--base-purple); font-weight: bold; }
+  .tag-green-text { color: var(--height-green); font-weight: bold; }
+  
+  .summary-banner { background: #fff8e1; border: 2px dashed #ffb300; border-radius: 12px; padding: 16px; text-align: center; font-size: 18px; font-weight: bold; color: #e65100; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>📐 平行四邊形剪拼長方形互動學習工具</h1>
+    <p class="subtitle">剪開 ➔ 平移 ➔ 拼貼 ➔ 發現面積公式</p>
+  </header>
+
+  <!-- 顏色提示圖例 -->
+  <div class="color-legend">
+    <div class="legend-badge badge-purple">
+      <span>🟣</span> 紫色線 ＝ 平行四邊形的底（8 cm）
+    </div>
+    <div class="legend-badge badge-green">
+      <span>🟢</span> 綠色線 ＝ 平行四邊形的高（5 cm）
+    </div>
+  </div>
+
+  <!-- SVG 動態畫布 -->
+  <div class="canvas-wrapper">
+    <svg id="svgCanvas" viewBox="0 0 780 370" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- 1 cm 方格 (30px = 1 cm) -->
+        <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+          <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#e0e0e0" stroke-width="1.2"/>
+        </pattern>
+        <!-- 箭頭標記 -->
+        <marker id="arrowPurple" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#8e24aa"/>
+        </marker>
+        <marker id="arrowGreen" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#2e7d32"/>
+        </marker>
+      </defs>
+
+      <!-- 網格底層 -->
+      <rect id="bgGrid" width="100%" height="100%" fill="url(#grid)" />
+
+      <!-- 原圖虛線輪廓 -->
+      <polygon id="ghostParallelogram" points="150,270 390,270 480,120 240,120" fill="none" stroke="#b0bec5" stroke-width="2" stroke-dasharray="6,4" />
+
+      <!-- 圖形塊 B (右側保留部分) -->
+      <polygon id="pieceB" points="300,270 390,270 480,120 300,120" fill="#ffe0b2" stroke="#f57c00" stroke-width="2.5" />
+
+      <!-- 圖形塊 A (左側平移部分) -->
+      <g id="groupA" transform="translate(0, 0)">
+        <polygon id="pieceA" points="150,270 300,270 300,120 240,120" fill="#b3e5fc" stroke="#0288d1" stroke-width="2.5" />
+      </g>
+
+      <!-- 剪切線群組 (綠色高線) -->
+      <g id="cutLineGroup">
+        <line id="cutLine" x1="300" y1="270" x2="300" y2="120" stroke="#2e7d32" stroke-width="3" stroke-dasharray="6,4" />
+        <path id="rightAngleMark" d="M 312 270 L 312 258 L 300 258" fill="none" stroke="#2e7d32" stroke-width="2" />
+        <text id="scissorsIcon" x="300" y="195" font-size="20" text-anchor="middle" dominant-baseline="central">✂️</text>
+        <circle id="cutPointCircle" cx="300" cy="270" r="7" fill="#2e7d32" stroke="#ffffff" stroke-width="2" />
+      </g>
+
+      <!-- 紫色底邊標註線（底邊） -->
+      <g id="baseDimensionGroup">
+        <line id="baseLine" x1="150" y1="270" x2="390" y2="270" stroke="#8e24aa" stroke-width="4.5" />
+        <!-- 底邊雙向尺寸線 -->
+        <line x1="150" y1="295" x2="390" y2="295" stroke="#8e24aa" stroke-width="2" marker-start="url(#arrowPurple)" marker-end="url(#arrowPurple)" />
+        <text x="270" y="315" fill="#8e24aa" font-weight="bold" font-size="15" text-anchor="middle">底 ＝ 8 cm（數一數：共 8 格）</text>
+      </g>
+
+      <!-- 綠色垂直高標註線（高） -->
+      <g id="heightDimensionGroup">
+        <!-- 側邊垂直高尺寸線 -->
+        <line x1="110" y1="270" x2="110" y2="120" stroke="#2e7d32" stroke-width="2" marker-start="url(#arrowGreen)" marker-end="url(#arrowGreen)" />
+        <text x="70" y="200" fill="#2e7d32" font-weight="bold" font-size="15" text-anchor="middle">高 ＝ 5 cm</text>
+        <text x="70" y="220" fill="#2e7d32" font-size="12" text-anchor="middle">（共 5 格）</text>
+      </g>
+
+      <!-- 頂點標籤 -->
+      <text x="140" y="265" font-size="15" font-weight="bold" fill="#78909c">A</text>
+      <text x="400" y="265" font-size="15" font-weight="bold" fill="#78909c">B</text>
+      <text x="490" y="115" font-size="15" font-weight="bold" fill="#78909c">C</text>
+      <text x="230" y="115" font-size="15" font-weight="bold" fill="#78909c">D</text>
+    </svg>
+  </div>
+
+  <!-- 操作面板 -->
+  <div class="control-grid">
+    <div class="card">
+      <div class="card-title">📍 步驟一：選擇底邊垂直切點</div>
+      <div class="btn-group" style="margin-bottom: 12px;">
+        <button class="btn-secondary" onclick="setPresetCut(240)">📐 頂點垂直（三角形）</button>
+        <button class="btn-secondary" onclick="setPresetCut(300)">✂️ 底邊中點（梯形）</button>
+      </div>
+      <div class="slider-box">
+        <div class="slider-label">
+          <span>拖曳切點位置：</span>
+          <span id="cutPosLabel" style="color:var(--primary);">底邊上的任意點</span>
+        </div>
+        <input type="range" id="cutSlider" min="240" max="390" value="300" oninput="onCutSliderChange(this.value)">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🎬 步驟二：剪開與平移拼貼</div>
+      <div class="btn-group" style="margin-bottom: 12px;">
+        <button id="btnCut" class="btn-cut" onclick="performCut()">✂️ 一刀剪開</button>
+        <button id="btnMove" class="btn-move" onclick="performMove()" disabled>➡️ 平移拼貼</button>
+        <button class="btn-secondary" onclick="resetAll()">🔄 重新開始</button>
+      </div>
+      <div class="slider-box">
+        <div class="slider-label">
+          <span>平移進度：</span>
+          <span id="moveProgressLabel">0%</span>
+        </div>
+        <input type="range" id="moveSlider" min="0" max="100" value="0" disabled oninput="onMoveSliderChange(this.value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- 學生互動答題區 -->
+  <div class="tasks-container">
+    <!-- 任務一 -->
+    <div class="task-card active" id="taskCard1">
+      <div class="task-header">
+        <span>✏️ 任務一：觀察拼貼後的圖形與面積</span>
+      </div>
+      <div class="task-body">
+        <div class="interactive-row">
+          <span>1. 沿著綠色的高剪開並平移後，拼成了一個</span>
+          <select id="q1_shape" onchange="checkTask1()">
+            <option value="">-- 請選擇 --</option>
+            <option value="長方形">長方形</option>
+            <option value="三角形">三角形</option>
+            <option value="圓形">圓形</option>
+          </select>
+          <span>。</span>
+        </div>
+        <div class="interactive-row">
+          <span>2. 拼成的新圖形，它的面積跟原本的平行四邊形面積是</span>
+          <select id="q1_area" onchange="checkTask1()">
+            <option value="">-- 請選擇 --</option>
+            <option value="相同">相同</option>
+            <option value="變大">變大</option>
+            <option value="變小">變小</option>
+          </select>
+          <span>的。</span>
+          <span id="msgTask1" class="feedback-msg"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 任務二 -->
+    <div class="task-card" id="taskCard2">
+      <div class="task-header">
+        <span>🔢 任務二：數一數格線，比較長度（每 1 格 ＝ 1 cm）</span>
+      </div>
+      <div class="task-body">
+        <div class="interactive-row">
+          <span><b>【切割前】</b> 平行四邊形的<span class="tag-purple-text">紫色底</span>是</span>
+          <input type="number" id="q2_base1" placeholder="？" min="1" max="20">
+          <span>cm；<span class="tag-green-text">綠色高</span>是</span>
+          <input type="number" id="q2_height1" placeholder="？" min="1" max="20">
+          <span>cm。</span>
+        </div>
+        <div class="interactive-row">
+          <span><b>【拼貼後】</b> 長方形的<span class="tag-purple-text">紫色長（底）</span>是</span>
+          <input type="number" id="q2_base2" placeholder="？" min="1" max="20">
+          <span>cm；<span class="tag-green-text">綠色闊（高）</span>是</span>
+          <input type="number" id="q2_height2" placeholder="？" min="1" max="20">
+          <span>cm。</span>
+        </div>
+        <div class="interactive-row" style="margin-top: 10px;">
+          <span>👉 由此可見，以上平行四邊形與長方形的底和高是</span>
+          <select id="q2_same">
+            <option value="">-- 請選擇 --</option>
+            <option value="相同">相同</option>
+            <option value="不同">不同</option>
+          </select>
+          <span>的！</span>
+          <button class="check-btn" onclick="checkTask2()">檢查答案</button>
+          <span id="msgTask2" class="feedback-msg"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 任務三 -->
+    <div class="task-card" id="taskCard3">
+      <div class="task-header">
+        <span>🌟 任務三：總結平行四邊形面積公式</span>
+      </div>
+      <div class="task-body">
+        <div class="interactive-row">
+          <span>平行四邊形的面積 ＝ </span>
+          <select id="q3_poly" onchange="checkTask3()">
+            <option value="">-- 請選擇圖形 --</option>
+            <option value="長方形">長方形</option>
+            <option value="三角形">三角形</option>
+          </select>
+          <span>的面積 ＝ </span>
+          <select id="q3_formula" onchange="checkTask3()">
+            <option value="">-- 請選擇公式 --</option>
+            <option value="底×高">底 × 高</option>
+            <option value="底+高">底 ＋ 高</option>
+            <option value="邊長×邊長">邊長 × 邊長</option>
+          </select>
+          <span id="msgTask3" class="feedback-msg"></span>
+        </div>
+
+        <div id="finalBanner" class="summary-banner" style="display:none;">
+          🎉 太棒了！你發現了重要定律：<br>
+          平行四邊形的面積 ＝ 長方形的面積 ＝ 底 × 高 ＝ 8 cm × 5 cm ＝ 40 cm²
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const UNIT = 30; // 30px = 1 cm
+  const BASE_CM = 8;
+  const HEIGHT_CM = 5;
+  const SLANT_CM = 3;
+
+  const BASE_PX = BASE_CM * UNIT;     // 240
+  const HEIGHT_PX = HEIGHT_CM * UNIT; // 150
+  const SLANT_PX = SLANT_CM * UNIT;   // 90
+
+  const X_A = 150, Y_BOTTOM = 270;
+  const X_B = X_A + BASE_PX, Y_TOP = Y_BOTTOM - HEIGHT_PX;
+  const X_D = X_A + SLANT_PX;
+  const X_C = X_B + SLANT_PX;
+
+  let cutX = 300;
+  let isCut = false;
+  let moveProgress = 0;
+
+  function updateShapes() {
+    cutX = Math.max(X_D, Math.min(X_B, cutX));
+
+    // 左塊 A 與右塊 B 多邊形座標
+    const ptsA = `${X_A},${Y_BOTTOM} ${cutX},${Y_BOTTOM} ${cutX},${Y_TOP} ${X_D},${Y_TOP}`;
+    const elPieceA = document.getElementById('pieceA');
+    if (elPieceA) elPieceA.setAttribute('points', ptsA);
+
+    const ptsB = `${cutX},${Y_BOTTOM} ${X_B},${Y_BOTTOM} ${X_C},${Y_TOP} ${cutX},${Y_TOP}`;
+    const elPieceB = document.getElementById('pieceB');
+    if (elPieceB) elPieceB.setAttribute('points', ptsB);
+
+    // 綠色垂直高剪切線
+    const cutLine = document.getElementById('cutLine');
+    if (cutLine) {
+      cutLine.setAttribute('x1', cutX);
+      cutLine.setAttribute('y1', Y_BOTTOM);
+      cutLine.setAttribute('x2', cutX);
+      cutLine.setAttribute('y2', Y_TOP);
+    }
+
+    const circle = document.getElementById('cutPointCircle');
+    if (circle) {
+      circle.setAttribute('cx', cutX);
+      circle.setAttribute('cy', Y_BOTTOM);
+    }
+
+    const scissors = document.getElementById('scissorsIcon');
+    if (scissors) {
+      scissors.setAttribute('x', cutX);
+      scissors.setAttribute('y', (Y_BOTTOM + Y_TOP) / 2);
+    }
+
+    const ra = document.getElementById('rightAngleMark');
+    if (ra) {
+      ra.setAttribute('d', `M ${cutX + 12} ${Y_BOTTOM} L ${cutX + 12} ${Y_BOTTOM - 12} L ${cutX} ${Y_BOTTOM - 12}`);
+    }
+
+    const offsetFromD = Math.round((cutX - X_D) / UNIT * 10) / 10;
+    const label = document.getElementById('cutPosLabel');
+    if (label) {
+      if (cutX === X_D) label.innerText = `頂點 D 垂直投影處（直角三角形）`;
+      else label.innerText = `距頂點投影右側 ${offsetFromD} cm（梯形）`;
+    }
+
+    applyTranslation();
+  }
+
+  function applyTranslation() {
+    const shiftX = moveProgress * BASE_PX;
+    const groupA = document.getElementById('groupA');
+    if (groupA) groupA.setAttribute('transform', `translate(${shiftX}, 0)`);
+
+    const cutGroup = document.getElementById('cutLineGroup');
+    if (cutGroup) {
+      cutGroup.style.opacity = isCut ? Math.max(0, 1 - moveProgress * 1.5) : 1;
+    }
+  }
+
+  function onCutSliderChange(val) {
+    if (isCut) resetAll();
+    cutX = parseFloat(val);
+    updateShapes();
+  }
+
+  function setPresetCut(val) {
+    resetAll();
+    const slider = document.getElementById('cutSlider');
+    if (slider) slider.value = val;
+    cutX = val;
+    updateShapes();
+  }
+
+  function performCut() {
+    isCut = true;
+    document.getElementById('btnCut').disabled = true;
+    document.getElementById('btnMove').disabled = false;
+    document.getElementById('moveSlider').disabled = false;
+    document.getElementById('cutSlider').disabled = true;
+
+    moveProgress = 0.05;
+    document.getElementById('moveSlider').value = 5;
+    document.getElementById('moveProgressLabel').innerText = `5% (已剪開)`;
+    applyTranslation();
+  }
+
+  function performMove() {
+    if (!isCut) return;
+    document.getElementById('btnMove').disabled = true;
+
+    let start = null;
+    const duration = 1200;
+    const initialProgress = moveProgress;
+
+    function animate(timestamp) {
+      if (!start) start = timestamp;
+      const elapsed = timestamp - start;
+      const t = Math.min(1, elapsed / duration);
+      const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      moveProgress = initialProgress + (1 - initialProgress) * ease;
+
+      const moveSlider = document.getElementById('moveSlider');
+      if (moveSlider) moveSlider.value = Math.round(moveProgress * 100);
+      document.getElementById('moveProgressLabel').innerText = `${Math.round(moveProgress * 100)}%`;
+      applyTranslation();
+
+      if (t < 1) requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+  }
+
+  function onMoveSliderChange(val) {
+    moveProgress = val / 100;
+    document.getElementById('moveProgressLabel').innerText = `${val}%`;
+    applyTranslation();
+  }
+
+  function resetAll() {
+    isCut = false;
+    moveProgress = 0;
+    document.getElementById('btnCut').disabled = false;
+    document.getElementById('btnMove').disabled = true;
+    document.getElementById('cutSlider').disabled = false;
+    const moveSlider = document.getElementById('moveSlider');
+    moveSlider.value = 0;
+    moveSlider.disabled = true;
+    document.getElementById('moveProgressLabel').innerText = `0%`;
+    updateShapes();
+  }
+
+  /* 任務互動驗證邏輯 */
+  function checkTask1() {
+    const s1 = document.getElementById('q1_shape').value;
+    const s2 = document.getElementById('q1_area').value;
+    const msg = document.getElementById('msgTask1');
+
+    if (!s1 || !s2) {
+      msg.innerText = '';
+      return;
+    }
+
+    if (s1 === '長方形' && s2 === '相同') {
+      msg.className = 'feedback-msg feedback-success';
+      msg.innerText = '✅ 答對了！順利拼成等積的長方形！';
+      document.getElementById('taskCard2').classList.add('active');
+    } else {
+      msg.className = 'feedback-msg feedback-error';
+      msg.innerText = '❌ 再想一想：拼出來有四個直角，且沒有增減紙張喔！';
+    }
+  }
+
+  function checkTask2() {
+    const b1 = parseInt(document.getElementById('q2_base1').value, 10);
+    const h1 = parseInt(document.getElementById('q2_height1').value, 10);
+    const b2 = parseInt(document.getElementById('q2_base2').value, 10);
+    const h2 = parseInt(document.getElementById('q2_height2').value, 10);
+    const same = document.getElementById('q2_same').value;
+    const msg = document.getElementById('msgTask2');
+
+    if (b1 === 8 && h1 === 5 && b2 === 8 && h2 === 5 && same === '相同') {
+      msg.className = 'feedback-msg feedback-success';
+      msg.innerText = '✅ 太厲害了！底與高完全相同（底=8cm, 高=5cm）！';
+      document.getElementById('taskCard3').classList.add('active');
+    } else {
+      msg.className = 'feedback-msg feedback-error';
+      msg.innerText = '❌ 請對照上方方格紙，仔細數數紫色線（底）與綠色線（高）有幾格喔！';
+    }
+  }
+
+  function checkTask3() {
+    const poly = document.getElementById('q3_poly').value;
+    const formula = document.getElementById('q3_formula').value;
+    const msg = document.getElementById('msgTask3');
+    const banner = document.getElementById('finalBanner');
+
+    if (!poly || !formula) {
+      msg.innerText = '';
+      banner.style.display = 'none';
+      return;
+    }
+
+    if (poly === '長方形' && formula === '底×高') {
+      msg.className = 'feedback-msg feedback-success';
+      msg.innerText = '✅ 完全正確！';
+      banner.style.display = 'block';
+    } else {
+      msg.className = 'feedback-msg feedback-error';
+      msg.innerText = '❌ 再試一次：利用剛剛拼成的圖形和尺寸來歸納公式！';
+      banner.style.display = 'none';
+    }
+  }
+
+  // 初始化執行
+  updateShapes();
+  document.addEventListener('DOMContentLoaded', updateShapes);
+</script>
+</body>
+</html>
