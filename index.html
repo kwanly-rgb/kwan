@@ -5,17 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>關老師的數學教學工具箱｜傳送門</title>
 <meta name="description" content="關麗瑩老師製作的互動教學小工具集合：四邊形、平行四邊形剪拼等。">
+<!-- QR code 產生器（約 20KB，離線亦可用） -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
 :root{--c1:#2b6cb0;--bg:#f2f6fb;--card:#fff;--txt:#222;--muted:#5a6a7a}
 *{box-sizing:border-box}
 body{margin:0;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--txt);line-height:1.55}
-header{background:linear-gradient(120deg,#2b6cb0,#4299e1 60%,#63b3ed);color:#fff;padding:28px 22px 34px;position:relative;overflow:hidden}
+header{background:linear-gradient(120deg,#2b6cb0,#4299e1 60%,#63b3ed);color:#fff;padding:28px 22px 30px;position:relative;overflow:hidden}
 header::after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.12)}
 header h1{margin:0;font-size:30px;letter-spacing:1px}
 header p{margin:6px 0 0;font-size:16px;opacity:.95}
 .credit{position:absolute;right:22px;top:16px;font-size:15px;background:rgba(255,255,255,.22);padding:4px 12px;border-radius:999px;z-index:1}
 @media(max-width:700px){.credit{position:static;display:inline-block;margin-top:10px}}
-main{max-width:1100px;margin:-18px auto 30px;padding:0 16px}
+main{max-width:1100px;margin:22px auto 30px;padding:0 16px}
 .toolbar{background:var(--card);border-radius:14px;padding:12px 16px;box-shadow:0 2px 10px rgba(0,0,0,.08);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .toolbar input{flex:1 1 220px;font-size:17px;padding:9px 14px;border:2px solid #cbd5e0;border-radius:10px}
 .toolbar input:focus{outline:none;border-color:var(--c1)}
@@ -47,10 +49,17 @@ main{max-width:1100px;margin:-18px auto 30px;padding:0 16px}
 .tags{display:flex;flex-wrap:wrap;gap:5px}
 .tag{font-size:13px;background:#edf2f7;color:#2a4365;border-radius:6px;padding:2px 8px}
 .desc{font-size:15.5px;color:#333;margin:0;flex:1}
-.btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+
+/* ---- 底部：按鈕 + QR ---- */
+.foot{display:flex;gap:12px;align-items:flex-end;justify-content:space-between;margin-top:4px}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
 .btn{text-decoration:none;border:0;cursor:pointer;border-radius:10px;padding:8px 14px;font-size:15px;background:var(--accent);color:#fff;display:inline-flex;align-items:center;gap:4px}
 .btn.ghost{background:#fff;color:var(--accent);border:2px solid var(--accent)}
 .btn.small{padding:6px 10px;font-size:14px}
+.qr{flex:none;text-align:center;cursor:zoom-in;font-size:12px;color:var(--muted);line-height:1.3}
+.qr svg,.qr img{width:78px;height:78px;display:block;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:4px;margin:0 auto 3px;transition:.15s}
+.qr:hover svg,.qr:hover img{box-shadow:0 0 0 2px var(--accent)}
+
 .empty{text-align:center;color:var(--muted);padding:40px;font-size:18px}
 .new::after{content:"NEW";font-size:11px;background:#e53e3e;color:#fff;border-radius:6px;padding:1px 6px;margin-left:8px;vertical-align:middle}
 footer{text-align:center;color:var(--muted);font-size:14px;padding:20px}
@@ -67,6 +76,12 @@ footer a{color:var(--c1)}
 .modal .mh .x{border:0;background:#edf2f7;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer}
 .modal .mb{position:relative;aspect-ratio:16/9;background:#000;max-height:calc(94vh - 60px)}
 .modal .mb iframe,.modal .mb video,.modal .mb img{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:contain;background:#fff}
+/* QR 放大版 */
+.modal .mb.qrbig{aspect-ratio:auto;background:#fff;padding:24px;display:flex;flex-direction:column;align-items:center;gap:14px;overflow:auto}
+.modal .mb.qrbig svg,.modal .mb.qrbig img{position:static;width:min(360px,70vw);height:auto;border:1px solid #e2e8f0;border-radius:12px;padding:12px}
+.modal .mb.qrbig .url{font-size:14px;color:var(--muted);word-break:break-all;text-align:center;max-width:600px}
+.modal .mb.qrbig .warn{font-size:14px;color:#c05621;background:#fffaf0;border:1px solid #fbd38d;border-radius:8px;padding:8px 12px;max-width:600px;text-align:center}
+.modal .mb.qrbig .acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 </style>
 </head>
 <body>
@@ -95,7 +110,7 @@ footer a{color:var(--c1)}
 
 <script>
 /* ============================================================
-   ★ 新增工具只需在這裏加一個項目 ★
+   ★ 新增工具只需在這裏加一個項目 ★（QR code 會自動產生，毋須設定）
    preview 四選一：
      {type:'live'}                                   即時縮圖（直接嵌入工具網頁，不用錄影）
      {type:'video', src:'previews/xxx.mp4', poster:'previews/xxx.jpg'}   自己錄的短片（poster 可省略）
@@ -104,21 +119,16 @@ footer a{color:var(--c1)}
    省略 preview 則只顯示 Emoji 圖示。
    ============================================================ */
 const TOOLS=[
- {icon:'🔷',title:'認識四邊形的特性',url:'quadrilateral.html',level:'高小',topic:'圖形與空間',
+ {icon:'🔷',title:'認識四邊形的特性',url:'quadrilateral.html',topic:'圖形與空間',
   tags:['正方形','長方形','平行四邊形','梯形','菱形','鷂形','釘板','七巧板','方格紙','窗櫺','風箏'],
   desc:'認識六種常見四邊形的特性；分辨正方形、長方形及菱形的異同；用方格紙、釘板、七巧板製作四邊形；認識中國傳統窗櫺及風箏非遺文化。',
   color:'#2b6cb0',isNew:true,
   preview:{type:'live'}},
- {icon:'✂️',title:'平行四邊形剪拼工具',url:'parallelogram_cut_tool.html',level:'高小',topic:'度量',
+ {icon:'✂️',title:'平行四邊形剪拼工具',url:'parallelogram_cut_tool.html',topic:'度量',
   tags:['平行四邊形','面積','剪拼','長方形','底','高'],
   desc:'把平行四邊形沿高剪開，拼成長方形，探究平行四邊形面積公式（底 × 高）的由來。',
   color:'#dd6b20',
   preview:{type:'live'}},
- /* 範例：錄好影片後可改成
- {icon:'📐',title:'三角形面積探究',url:'triangle_area.html',level:'高小',topic:'度量',
-  tags:['三角形','面積'],desc:'……',color:'#38a169',isNew:true,
-  preview:{type:'video',src:'previews/triangle_area.mp4'}},
- */
 ];
 
 /* ---------------- 以下毋須修改 ---------------- */
@@ -130,8 +140,42 @@ const topics=['全部',...new Set(TOOLS.map(t=>t.topic))];
 topics.forEach(t=>{const b=document.createElement('button');b.className='chip'+(t===topic?' active':'');b.textContent=t;b.onclick=()=>{topic=t;chips.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c===b));render();};chips.append(b);});
 
 const abs=url=>new URL(url,location.href).href;
+const isLocal=location.protocol==='file:';
 function showToast(msg){toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800);}
 function copy(url){(navigator.clipboard?navigator.clipboard.writeText(abs(url)):Promise.reject()).then(()=>showToast('已複製連結 ✅'),()=>prompt('請複製以下連結：',abs(url)));}
+
+/* ---- QR code ---- */
+function makeQR(url,opt={}){
+ if(typeof qrcode==='undefined'){ // CDN 載入失敗時改用線上 API
+  return `<img src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=8&data=${encodeURIComponent(url)}" alt="QR code">`;
+ }
+ const qr=qrcode(0,'M');qr.addData(url);qr.make();
+ return qr.createSvgTag({cellSize:opt.cellSize||4,margin:opt.margin??0,scalable:opt.scalable??true});
+}
+function downloadQR(t){
+ const url=abs(t.url),name=t.title.replace(/[\\/:*?"<>|]/g,'')+'_QR.png';
+ if(typeof qrcode==='undefined'){window.open(`https://api.qrserver.com/v1/create-qr-code/?size=800x800&margin=16&data=${encodeURIComponent(url)}`,'_blank');return;}
+ const svg=makeQR(url,{cellSize:8,margin:4,scalable:false});
+ const blob=new Blob([svg],{type:'image/svg+xml'}),u=URL.createObjectURL(blob),img=new Image();
+ img.onload=()=>{
+  const S=800,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,S,S);x.drawImage(img,0,0,S,S);
+  const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download=name;a.click();URL.revokeObjectURL(u);showToast('已下載 QR code ✅');
+ };
+ img.src=u;
+}
+function openQR(t){
+ const url=abs(t.url);
+ mTitle.textContent='📱 掃碼開啟：'+t.title;mOpen.href=t.url;
+ mBody.className='mb qrbig';
+ mBody.innerHTML=`${makeQR(url,{cellSize:10,margin:0})}
+  <div class="url">${url}</div>
+  ${isLocal?'<div class="warn">⚠️ 你現在是在本機開啟此檔案，QR 指向本機路徑，他人無法掃描。上載到 GitHub Pages 後再開啟本頁，QR 便會自動變成正確網址。</div>':''}
+  <div class="acts"><button class="btn" id="qrDl">⬇ 下載 PNG</button><button class="btn ghost" id="qrCp">🔗 複製連結</button></div>`;
+ modal.classList.add('open');document.body.style.overflow='hidden';
+ document.getElementById('qrDl').onclick=()=>downloadQR(t);
+ document.getElementById('qrCp').onclick=()=>copy(t.url);
+}
 
 /* 進入畫面才載入／播放，離開畫面即暫停，節省流量 */
 const io=new IntersectionObserver(es=>es.forEach(e=>{
@@ -164,27 +208,31 @@ function bigHTML(t){
   case 'youtube':return `<iframe src="https://www.youtube.com/embed/${p.id}?autoplay=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="${t.title}"></iframe>`;
  }
 }
-function openModal(t){mTitle.textContent=t.title;mOpen.href=t.url;mBody.innerHTML=bigHTML(t);modal.classList.add('open');document.body.style.overflow='hidden';}
-function closeModal(){modal.classList.remove('open');mBody.innerHTML='';document.body.style.overflow='';}
+function openModal(t){mTitle.textContent=t.title;mOpen.href=t.url;mBody.className='mb';mBody.innerHTML=bigHTML(t);modal.classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(){modal.classList.remove('open');mBody.innerHTML='';mBody.className='mb';document.body.style.overflow='';}
 document.getElementById('mClose').onclick=closeModal;
 modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
 function render(){
  const kw=q.value.trim().toLowerCase();
- const list=TOOLS.filter(t=>(topic==='全部'||t.topic===topic)&&(!kw||[t.title,t.level,t.topic,t.desc,...t.tags].join(' ').toLowerCase().includes(kw)));
+ const list=TOOLS.filter(t=>(topic==='全部'||t.topic===topic)&&(!kw||[t.title,t.topic,t.desc,...t.tags].join(' ').toLowerCase().includes(kw)));
  count.textContent=`共 ${list.length} 個工具`;
  grid.innerHTML=list.length?'':'<div class="empty">找不到相關工具，試試其他關鍵字。</div>';
  list.forEach(t=>{
   const c=document.createElement('article');c.className='card';c.style.setProperty('--accent',t.color||'#2b6cb0');
   c.innerHTML=`<div class="preview" title="按一下放大預覽">${previewHTML(t)}<span class="zoom">🔍 放大預覽</span></div>
    <div class="body">
-    <div class="top"><div class="icon">${t.icon}</div><div><h2 class="${t.isNew?'new':''}">${t.title}</h2><div class="tags"><span class="tag">${t.level}</span><span class="tag">${t.topic}</span></div></div></div>
+    <div class="top"><div class="icon">${t.icon}</div><div><h2 class="${t.isNew?'new':''}">${t.title}</h2><div class="tags"><span class="tag">${t.topic}</span></div></div></div>
     <p class="desc">${t.desc}</p>
     <div class="tags">${t.tags.map(x=>`<span class="tag">#${x}</span>`).join('')}</div>
-    <div class="btns"><a class="btn" href="${t.url}">▶ 開啟</a><a class="btn ghost" href="${t.url}" target="_blank" rel="noopener">↗ 新視窗</a><button class="btn ghost small" data-url="${t.url}">🔗 複製連結</button></div>
+    <div class="foot">
+     <div class="btns"><a class="btn" href="${t.url}">▶ 開啟</a><a class="btn ghost" href="${t.url}" target="_blank" rel="noopener">↗ 新視窗</a><button class="btn ghost small" data-url="${t.url}">🔗 複製連結</button></div>
+     <div class="qr" title="按一下放大 QR code">${makeQR(abs(t.url))}掃碼開啟</div>
+    </div>
    </div>`;
-  c.querySelector('button').onclick=e=>copy(e.currentTarget.dataset.url);
+  c.querySelector('.btns button').onclick=e=>copy(e.currentTarget.dataset.url);
+  c.querySelector('.qr').onclick=()=>openQR(t);
   const pv=c.querySelector('.preview');
   pv.onclick=()=>t.preview?openModal(t):location.assign(t.url);
   const v=pv.querySelector('video');
