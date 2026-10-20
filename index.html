@@ -1,443 +1,200 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>互動教學探索樂園 | 教學工具傳送門</title>
-  <!-- 引入易讀的圓體字型 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>關老師的數學教學工具箱｜傳送門</title>
+<meta name="description" content="關麗瑩老師製作的互動教學小工具集合：四邊形、平行四邊形剪拼等。">
+<style>
+:root{--c1:#2b6cb0;--bg:#f2f6fb;--card:#fff;--txt:#222;--muted:#5a6a7a}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--txt);line-height:1.55}
+header{background:linear-gradient(120deg,#2b6cb0,#4299e1 60%,#63b3ed);color:#fff;padding:28px 22px 34px;position:relative;overflow:hidden}
+header::after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.12)}
+header h1{margin:0;font-size:30px;letter-spacing:1px}
+header p{margin:6px 0 0;font-size:16px;opacity:.95}
+.credit{position:absolute;right:22px;top:16px;font-size:15px;background:rgba(255,255,255,.22);padding:4px 12px;border-radius:999px;z-index:1}
+@media(max-width:700px){.credit{position:static;display:inline-block;margin-top:10px}}
+main{max-width:1100px;margin:-18px auto 30px;padding:0 16px}
+.toolbar{background:var(--card);border-radius:14px;padding:12px 16px;box-shadow:0 2px 10px rgba(0,0,0,.08);display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.toolbar input{flex:1 1 220px;font-size:17px;padding:9px 14px;border:2px solid #cbd5e0;border-radius:10px}
+.toolbar input:focus{outline:none;border-color:var(--c1)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:2px solid #cbd5e0;background:#fff;border-radius:999px;padding:5px 14px;font-size:15px;cursor:pointer}
+.chip.active{background:var(--c1);color:#fff;border-color:var(--c1)}
+.count{font-size:15px;color:var(--muted);margin:14px 4px 6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.card{background:var(--card);border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.07);display:flex;flex-direction:column;overflow:hidden;transition:transform .15s,box-shadow .15s;border-top:6px solid var(--accent,#2b6cb0)}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,.12)}
+.body{padding:14px 18px 18px;display:flex;flex-direction:column;gap:10px;flex:1}
 
-  <style>
-    /* =========================================================
-       全域基礎設定 (特教與低年級友善：大字體、高對比、大點擊區)
-       ========================================================= */
-    :root {
-      --bg-color: #F8FAFC;
-      --card-bg: #FFFFFF;
-      --primary: #3B82F6;
-      --primary-hover: #2563EB;
-      --text-main: #0F172A;
-      --text-muted: #64748B;
+/* ---- 預覽區 ---- */
+.preview{position:relative;aspect-ratio:16/9;background:#e2e8f0;overflow:hidden;cursor:zoom-in}
+.preview video,.preview img{width:100%;height:100%;object-fit:cover;display:block}
+.preview .live{position:absolute;inset:0;overflow:hidden;background:#fff}
+.preview .live iframe{position:absolute;left:0;top:0;width:1200px;height:675px;border:0;transform-origin:0 0;pointer-events:none}
+.preview .ph{position:absolute;inset:0;display:grid;place-items:center;font-size:64px;background:color-mix(in srgb,var(--accent) 12%,#fff)}
+.preview .lbl{position:absolute;left:8px;top:8px;font-size:12px;background:rgba(0,0,0,.55);color:#fff;padding:2px 8px;border-radius:6px;pointer-events:none}
+.preview .zoom{position:absolute;right:8px;bottom:8px;font-size:13px;background:rgba(0,0,0,.55);color:#fff;padding:3px 9px;border-radius:6px;pointer-events:none;opacity:0;transition:.2s}
+.preview:hover .zoom{opacity:1}
+.preview .yt{position:absolute;inset:0;display:grid;place-items:center}
+.preview .yt span{width:64px;height:44px;background:rgba(229,62,62,.92);border-radius:12px;display:grid;place-items:center;color:#fff;font-size:24px}
+.preview .loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:15px;background:#edf2f7}
 
-      /* 主題外框與裝飾色 */
-      --accent-geometry: #FEF3C7;
-      --border-geometry: #F59E0B;   /* 幾何主題：暖黃/琥珀色 */
-      --accent-math: #EFF6FF;
-      --border-math: #3B82F6;       /* 剪切主題：活力深藍色 */
-    }
+.top{display:flex;gap:12px;align-items:center}
+.icon{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;font-size:26px;background:color-mix(in srgb,var(--accent) 15%,#fff);flex:none}
+.card h2{margin:0;font-size:20px}
+.tags{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-size:13px;background:#edf2f7;color:#2a4365;border-radius:6px;padding:2px 8px}
+.desc{font-size:15.5px;color:#333;margin:0;flex:1}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.btn{text-decoration:none;border:0;cursor:pointer;border-radius:10px;padding:8px 14px;font-size:15px;background:var(--accent);color:#fff;display:inline-flex;align-items:center;gap:4px}
+.btn.ghost{background:#fff;color:var(--accent);border:2px solid var(--accent)}
+.btn.small{padding:6px 10px;font-size:14px}
+.empty{text-align:center;color:var(--muted);padding:40px;font-size:18px}
+.new::after{content:"NEW";font-size:11px;background:#e53e3e;color:#fff;border-radius:6px;padding:1px 6px;margin-left:8px;vertical-align:middle}
+footer{text-align:center;color:var(--muted);font-size:14px;padding:20px}
+footer a{color:var(--c1)}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#2a4365;color:#fff;padding:10px 20px;border-radius:999px;opacity:0;transition:.3s;pointer-events:none;font-size:15px;z-index:60}
+.toast.show{opacity:1;transform:translateX(-50%)}
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Noto Sans TC', system-ui, -apple-system, sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      line-height: 1.6;
-      padding: 28px 16px 60px 16px;
-    }
-
-    .container {
-      max-width: 920px;
-      margin: 0 auto;
-    }
-
-    /* =========================================================
-       頁首 Header
-       ========================================================= */
-    header {
-      text-align: center;
-      margin-bottom: 36px;
-      padding: 32px 24px;
-      background: #FFFFFF;
-      border-radius: 28px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
-      border: 2px solid #E2E8F0;
-    }
-
-    .badge {
-      display: inline-block;
-      background-color: #EEF2FF;
-      color: #4338CA;
-      font-size: 0.95rem;
-      font-weight: 700;
-      padding: 6px 18px;
-      border-radius: 999px;
-      margin-bottom: 12px;
-      border: 1px solid #C7D2FE;
-    }
-
-    header h1 {
-      font-size: 2.2rem;
-      font-weight: 700;
-      color: #0F172A;
-      margin-bottom: 8px;
-      letter-spacing: -0.5px;
-    }
-
-    header p {
-      font-size: 1.15rem;
-      color: var(--text-muted);
-    }
-
-    /* =========================================================
-       工具清單與卡片網格 (雙卡片自適應置中排版)
-       ========================================================= */
-    .section-title {
-      font-size: 1.45rem;
-      font-weight: 700;
-      margin: 30px 0 20px 8px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 28px;
-    }
-
-    /* 單張工具卡片 */
-    .card {
-      background: var(--card-bg);
-      border-radius: 24px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      border: 3.5px solid #E2E8F0;
-      box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.05);
-      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 16px 28px -4px rgba(0, 0, 0, 0.1);
-    }
-
-    /* 卡片主題色邊框 */
-    .card.theme-geometry {
-      border-color: var(--border-geometry);
-    }
-    .card.theme-math {
-      border-color: var(--border-math);
-    }
-
-    /* =========================================================
-       卡片預覽區塊 (純 CSS 幾何微動畫，零外部檔案依賴)
-       ========================================================= */
-    .card-preview {
-      height: 190px;
-      width: 100%;
-      background: linear-gradient(135deg, #1E293B, #0F172A);
-      border-bottom: 2px solid #E2E8F0;
-      overflow: hidden;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .anim-badge {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: rgba(15, 23, 42, 0.8);
-      color: #F8FAFC;
-      font-size: 0.78rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 8px;
-      backdrop-filter: blur(4px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      z-index: 2;
-    }
-
-    /* -------------------------------------------
-       ✨ 動畫 1：四邊形變換與對稱風箏微動畫
-       ------------------------------------------- */
-    .css-anim-quad-kite {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    /* 自動變形的四邊形 */
-    .morph-quad {
-      width: 90px;
-      height: 65px;
-      background: linear-gradient(135deg, #F59E0B, #FBBF24);
-      border: 3px solid #FEF3C7;
-      border-radius: 8px;
-      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35);
-      animation: quadMorph 4.5s ease-in-out infinite alternate;
-    }
-
-    @keyframes quadMorph {
-      0% {
-        transform: skewX(-18deg);
-      }
-      50% {
-        transform: skewX(0deg) scale(1.05); /* 長方形 */
-      }
-      100% {
-        transform: skewX(18deg);
-      }
-    }
-
-    /* 風箏（鳶形）飄動圖示 */
-    .flying-kite {
-      font-size: 3rem;
-      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.3));
-      animation: kiteHover 3s ease-in-out infinite alternate;
-    }
-
-    @keyframes kiteHover {
-      0% { transform: translateY(-4px) rotate(-8deg); }
-      100% { transform: translateY(6px) rotate(10deg); }
-    }
-
-    /* -------------------------------------------
-       ✨ 動畫 2：平行四邊形剪切平移拼接動畫
-       ------------------------------------------- */
-    .css-anim-cut-stage {
-      position: relative;
-      width: 170px;
-      height: 75px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .cut-shape-base {
-      width: 95px;
-      height: 62px;
-      background: #3B82F6;
-      border: 2px solid #BFDBFE;
-      transform: skewX(-20deg);
-      border-radius: 4px;
-    }
-
-    .cut-piece-sliding {
-      width: 30px;
-      height: 62px;
-      background: #60A5FA;
-      border: 2px dashed #FFFFFF;
-      clip-path: polygon(0 0, 100% 0, 0 100%);
-      position: absolute;
-      left: 16px;
-      animation: cutSlide 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    }
-
-    @keyframes cutSlide {
-      0%, 20% {
-        transform: translateX(0);
-        opacity: 0.9;
-      }
-      60%, 80% {
-        transform: translateX(100px); /* 滑動到右側拼成長方形 */
-        opacity: 1;
-      }
-      100% {
-        transform: translateX(0);
-        opacity: 0.9;
-      }
-    }
-
-    .cut-icon {
-      position: absolute;
-      top: 4px;
-      left: 32px;
-      font-size: 1.4rem;
-      animation: scissorSnip 1.2s ease-in-out infinite;
-    }
-
-    @keyframes scissorSnip {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-5px) rotate(-18deg); }
-    }
-
-    /* =========================================================
-       卡片內容與標籤
-       ========================================================= */
-    .card-body {
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      flex-grow: 1;
-    }
-
-    .tags-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-bottom: 12px;
-    }
-
-    .card-tag {
-      font-size: 0.85rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 8px;
-      background-color: #F1F5F9;
-      color: #475569;
-    }
-
-    .card-tag.highlight {
-      background-color: #FEF3C7;
-      color: #92400E;
-      border: 1px solid #FDE68A;
-    }
-
-    .card-title {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--text-main);
-      margin-bottom: 10px;
-    }
-
-    .card-desc {
-      font-size: 1.02rem;
-      color: var(--text-muted);
-      margin-bottom: 24px;
-      flex-grow: 1;
-      line-height: 1.65;
-    }
-
-    /* 內嵌特色清單（讓學生/家長知道裡面有什麼） */
-    .sub-features {
-      list-style: none;
-      background: #F8FAFC;
-      border-radius: 12px;
-      padding: 10px 14px;
-      margin-bottom: 20px;
-      font-size: 0.92rem;
-      color: #334155;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    .card-button {
-      display: block;
-      width: 100%;
-      text-align: center;
-      padding: 15px 18px;
-      background-color: var(--primary);
-      color: #FFFFFF;
-      text-decoration: none;
-      font-size: 1.15rem;
-      font-weight: 700;
-      border-radius: 16px;
-      transition: background-color 0.2s ease, transform 0.1s ease;
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
-    }
-
-    .card-button:hover {
-      background-color: var(--primary-hover);
-    }
-
-    .card-button:active {
-      transform: scale(0.98);
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 60px;
-      padding-top: 24px;
-      border-top: 1px solid #E2E8F0;
-      color: var(--text-muted);
-      font-size: 0.95rem;
-    }
-  </style>
+/* ---- 放大視窗 ---- */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal.open{display:flex}
+.modal .box{background:#fff;border-radius:16px;width:min(1100px,100%);max-height:94vh;display:flex;flex-direction:column;overflow:hidden}
+.modal .mh{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #e2e8f0}
+.modal .mh h3{margin:0;flex:1;font-size:18px}
+.modal .mh .x{border:0;background:#edf2f7;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer}
+.modal .mb{position:relative;aspect-ratio:16/9;background:#000;max-height:calc(94vh - 60px)}
+.modal .mb iframe,.modal .mb video,.modal .mb img{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:contain;background:#fff}
+</style>
 </head>
 <body>
+<header>
+ <h1>🧰 關老師的數學教學工具箱</h1>
+ <p>互動教學小工具傳送門｜按卡片即可開啟，適合課堂示範、電子學習及家中自學</p>
+ <div class="credit">網頁製作：關麗瑩老師</div>
+</header>
 
-  <div class="container">
-    <!-- 頁首標題區塊 -->
-    <header>
-      <span class="badge">🎒 互動教學專區</span>
-      <h1>自主學習與互動工具傳送門</h1>
-      <p>點選下方卡片，一起動動手探索好玩的幾何與動手做工具！</p>
-    </header>
+<main>
+ <div class="toolbar">
+  <input id="q" type="search" placeholder="🔍 搜尋工具名稱、單元或關鍵字……">
+  <div class="chips" id="chips"></div>
+ </div>
+ <div class="count" id="count"></div>
+ <div class="grid" id="grid"></div>
+</main>
 
-    <!-- 互動教材卡片區 -->
-    <h2 class="section-title">📐 精選互動學習工具</h2>
-    <div class="grid">
+<footer>
+ © <span id="yr"></span> 關麗瑩老師 ｜ 工具均以 HTML 製作，無需安裝，建議使用 Chrome / Edge / Safari 開啟。
+ ｜ <a href="https://github.com/kwanly-rgb/kwan" target="_blank" rel="noopener">GitHub 倉庫</a>
+</footer>
 
-      <!-- ==========================================
-           卡片 1：四邊形探索工具（含風箏製作與對稱）
-           ========================================== -->
-      <article class="card theme-geometry">
-        <div class="card-preview">
-          <span class="anim-badge">✨ 幾何變形 ＆ 風箏</span>
-          <div class="css-anim-quad-kite">
-            <div class="morph-quad" title="四邊形自動形變"></div>
-            <div class="flying-kite" title="風箏對稱探索">🪁</div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="tags-row">
-            <span class="card-tag">四邊形認知</span>
-            <span class="card-tag highlight">🪁 內含風箏工藝分頁</span>
-          </div>
-          <h3 class="card-title">四邊形探索與風箏工藝</h3>
-          <p class="card-desc">
-            觀察四邊形的邊長、平行與角度變化；單元內更包含<strong>「傳統風箏製作」</strong>頁面，帶領孩子動手探索生活中的鳶形與對稱之美！
-          </p>
-          <ul class="sub-features">
-            <li>🔹 互動拉動：探索正方形、長方形、平行四邊形</li>
-            <li>🔹 特別單元：風箏製作步驟與對稱軸探索</li>
-          </ul>
-          <a href="quadrilateral.html" class="card-button">
-            👉 進入四邊形與風箏探索
-          </a>
-        </div>
-      </article>
+<div class="modal" id="modal"><div class="box"><div class="mh"><h3 id="mTitle"></h3><a class="btn small" id="mOpen" target="_blank" rel="noopener">↗ 開啟工具</a><button class="x" id="mClose" aria-label="關閉">✕</button></div><div class="mb" id="mBody"></div></div></div>
+<div class="toast" id="toast"></div>
 
-      <!-- ==========================================
-           卡片 2：平行四邊形剪切工具
-           ========================================== -->
-      <article class="card theme-math">
-        <div class="card-preview">
-          <span class="anim-badge">✂️ 剪切拼貼動態</span>
-          <div class="css-anim-cut-stage">
-            <div class="cut-shape-base"></div>
-            <div class="cut-piece-sliding"></div>
-            <div class="cut-icon">✂️</div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="tags-row">
-            <span class="card-tag">四邊形面積單元</span>
-            <span class="card-tag">動手操作</span>
-          </div>
-          <h3 class="card-title">平行四邊形剪切工具</h3>
-          <p class="card-desc">
-            動手拖曳與剪切幾何圖形，透過「剪下直角三角形、平移拼成長方形」的視覺化步驟，輕鬆理解面積公式「底 × 高」的由來！
-          </p>
-          <ul class="sub-features">
-            <li>🔹 直覺剪切：自訂高與切割線</li>
-            <li>🔹 動態平移：平滑滑動拼接成長方形</li>
-          </ul>
-          <a href="parallelogram_cut_tool.html" class="card-button">
-            👉 點我開始剪剪看
-          </a>
-        </div>
-      </article>
+<script>
+/* ============================================================
+   ★ 新增工具只需在這裏加一個項目 ★
+   preview 四選一：
+     {type:'live'}                                   即時縮圖（直接嵌入工具網頁，不用錄影）
+     {type:'video', src:'previews/xxx.mp4', poster:'previews/xxx.jpg'}   自己錄的短片（poster 可省略）
+     {type:'gif',   src:'previews/xxx.gif'}          GIF 動圖
+     {type:'youtube', id:'YouTube影片編號'}            YouTube 影片
+   省略 preview 則只顯示 Emoji 圖示。
+   ============================================================ */
+const TOOLS=[
+ {icon:'🔷',title:'認識四邊形的特性',url:'quadrilateral.html',level:'高小',topic:'圖形與空間',
+  tags:['正方形','長方形','平行四邊形','梯形','菱形','鷂形','釘板','七巧板','方格紙','窗櫺','風箏'],
+  desc:'認識六種常見四邊形的特性；分辨正方形、長方形及菱形的異同；用方格紙、釘板、七巧板製作四邊形；認識中國傳統窗櫺及風箏非遺文化。',
+  color:'#2b6cb0',isNew:true,
+  preview:{type:'live'}},
+ {icon:'✂️',title:'平行四邊形剪拼工具',url:'parallelogram_cut_tool.html',level:'高小',topic:'度量',
+  tags:['平行四邊形','面積','剪拼','長方形','底','高'],
+  desc:'把平行四邊形沿高剪開，拼成長方形，探究平行四邊形面積公式（底 × 高）的由來。',
+  color:'#dd6b20',
+  preview:{type:'live'}},
+ /* 範例：錄好影片後可改成
+ {icon:'📐',title:'三角形面積探究',url:'triangle_area.html',level:'高小',topic:'度量',
+  tags:['三角形','面積'],desc:'……',color:'#38a169',isNew:true,
+  preview:{type:'video',src:'previews/triangle_area.mp4'}},
+ */
+];
 
-    </div>
+/* ---------------- 以下毋須修改 ---------------- */
+const grid=document.getElementById('grid'),chips=document.getElementById('chips'),q=document.getElementById('q'),count=document.getElementById('count'),toast=document.getElementById('toast');
+const modal=document.getElementById('modal'),mBody=document.getElementById('mBody'),mTitle=document.getElementById('mTitle'),mOpen=document.getElementById('mOpen');
+document.getElementById('yr').textContent=new Date().getFullYear();
+let topic='全部';
+const topics=['全部',...new Set(TOOLS.map(t=>t.topic))];
+topics.forEach(t=>{const b=document.createElement('button');b.className='chip'+(t===topic?' active':'');b.textContent=t;b.onclick=()=>{topic=t;chips.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active',c===b));render();};chips.append(b);});
 
-    <!-- 頁尾 -->
-    <footer>
-      <p>💡 建議使用平板電腦（iPad）或觸控電腦瀏覽，操作體驗最佳。</p>
-    </footer>
-  </div>
+const abs=url=>new URL(url,location.href).href;
+function showToast(msg){toast.textContent=msg;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1800);}
+function copy(url){(navigator.clipboard?navigator.clipboard.writeText(abs(url)):Promise.reject()).then(()=>showToast('已複製連結 ✅'),()=>prompt('請複製以下連結：',abs(url)));}
 
+/* 進入畫面才載入／播放，離開畫面即暫停，節省流量 */
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+ const el=e.target;
+ if(el.tagName==='VIDEO'){e.isIntersecting?el.play().catch(()=>{}):el.pause();}
+ else if(el.classList.contains('live')&&e.isIntersecting&&!el.dataset.loaded){el.dataset.loaded=1;const f=document.createElement('iframe');f.src=el.dataset.src;f.loading='lazy';f.title='預覽';f.onload=()=>el.querySelector('.loading')?.remove();el.append(f);fitLive(el);}
+}),{threshold:.3});
+
+function fitLive(el){const f=el.querySelector('iframe');if(f)f.style.transform=`scale(${el.clientWidth/1200})`;}
+window.addEventListener('resize',()=>document.querySelectorAll('.preview .live').forEach(fitLive));
+
+function previewHTML(t){
+ const p=t.preview,ph=`<div class="ph">${t.icon}</div>`;
+ if(!p)return ph;
+ switch(p.type){
+  case 'live':return `<div class="live" data-src="${t.url}"><div class="loading">⏳ 載入預覽中…</div></div><span class="lbl">即時預覽</span>`;
+  case 'video':return `<video muted loop playsinline preload="metadata" ${p.poster?`poster="${p.poster}"`:''} src="${p.src}"></video><span class="lbl">▶ 影片預覽</span>`;
+  case 'gif':return `<img src="${p.src}" loading="lazy" alt="${t.title} 預覽"><span class="lbl">預覽</span>`;
+  case 'youtube':return `<img src="https://img.youtube.com/vi/${p.id}/hqdefault.jpg" loading="lazy" alt="${t.title} 影片"><div class="yt"><span>▶</span></div><span class="lbl">YouTube</span>`;
+  default:return ph;
+ }
+}
+function bigHTML(t){
+ const p=t.preview;
+ if(!p)return '';
+ switch(p.type){
+  case 'live':return `<iframe src="${t.url}" title="${t.title}"></iframe>`;
+  case 'video':return `<video src="${p.src}" controls autoplay muted loop playsinline></video>`;
+  case 'gif':return `<img src="${p.src}" alt="">`;
+  case 'youtube':return `<iframe src="https://www.youtube.com/embed/${p.id}?autoplay=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen title="${t.title}"></iframe>`;
+ }
+}
+function openModal(t){mTitle.textContent=t.title;mOpen.href=t.url;mBody.innerHTML=bigHTML(t);modal.classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(){modal.classList.remove('open');mBody.innerHTML='';document.body.style.overflow='';}
+document.getElementById('mClose').onclick=closeModal;
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+function render(){
+ const kw=q.value.trim().toLowerCase();
+ const list=TOOLS.filter(t=>(topic==='全部'||t.topic===topic)&&(!kw||[t.title,t.level,t.topic,t.desc,...t.tags].join(' ').toLowerCase().includes(kw)));
+ count.textContent=`共 ${list.length} 個工具`;
+ grid.innerHTML=list.length?'':'<div class="empty">找不到相關工具，試試其他關鍵字。</div>';
+ list.forEach(t=>{
+  const c=document.createElement('article');c.className='card';c.style.setProperty('--accent',t.color||'#2b6cb0');
+  c.innerHTML=`<div class="preview" title="按一下放大預覽">${previewHTML(t)}<span class="zoom">🔍 放大預覽</span></div>
+   <div class="body">
+    <div class="top"><div class="icon">${t.icon}</div><div><h2 class="${t.isNew?'new':''}">${t.title}</h2><div class="tags"><span class="tag">${t.level}</span><span class="tag">${t.topic}</span></div></div></div>
+    <p class="desc">${t.desc}</p>
+    <div class="tags">${t.tags.map(x=>`<span class="tag">#${x}</span>`).join('')}</div>
+    <div class="btns"><a class="btn" href="${t.url}">▶ 開啟</a><a class="btn ghost" href="${t.url}" target="_blank" rel="noopener">↗ 新視窗</a><button class="btn ghost small" data-url="${t.url}">🔗 複製連結</button></div>
+   </div>`;
+  c.querySelector('button').onclick=e=>copy(e.currentTarget.dataset.url);
+  const pv=c.querySelector('.preview');
+  pv.onclick=()=>t.preview?openModal(t):location.assign(t.url);
+  const v=pv.querySelector('video');
+  if(v){v.onerror=()=>{pv.innerHTML=`<div class="ph">${t.icon}</div><span class="lbl">找不到影片檔</span>`;};pv.onmouseenter=()=>v.play().catch(()=>{});io.observe(v);}
+  const lv=pv.querySelector('.live');if(lv)io.observe(lv);
+  grid.append(c);
+ });
+}
+q.addEventListener('input',render);
+render();
+</script>
 </body>
 </html>
