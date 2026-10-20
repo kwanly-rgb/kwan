@@ -10,26 +10,22 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    /* =========================
-       全域基礎設定 (特教友善：大字體、高對比、大點擊區)
-       ========================= */
+    /* =========================================================
+       全域基礎設定 (特教與低年級友善：大字體、高對比、大點擊區)
+       ========================================================= */
     :root {
       --bg-color: #F8FAFC;
       --card-bg: #FFFFFF;
       --primary: #3B82F6;
       --primary-hover: #2563EB;
-      --text-main: #1E293B;
+      --text-main: #0F172A;
       --text-muted: #64748B;
 
-      /* 主題外框與裝飾色系 */
-      --accent-math: #EFF6FF;
-      --border-math: #93C5FD;       /* 藍色系邊框 */
+      /* 主題外框與裝飾色 */
       --accent-geometry: #FEF3C7;
-      --border-geometry: #FCD34D;   /* 黃橙色邊框 */
-      --accent-life: #ECFDF5;
-      --border-life: #6EE7B7;       /* 綠色系邊框 */
-      --accent-purple: #F5F3FF;
-      --border-purple: #C4B5FD;     /* 紫色系邊框 */
+      --border-geometry: #F59E0B;   /* 幾何主題：暖黃/琥珀色 */
+      --accent-math: #EFF6FF;
+      --border-math: #3B82F6;       /* 剪切主題：活力深藍色 */
     }
 
     * {
@@ -43,43 +39,45 @@
       background-color: var(--bg-color);
       color: var(--text-main);
       line-height: 1.6;
-      padding: 24px 16px 60px 16px;
+      padding: 28px 16px 60px 16px;
     }
 
     .container {
-      max-width: 1040px;
+      max-width: 920px;
       margin: 0 auto;
     }
 
-    /* =========================
+    /* =========================================================
        頁首 Header
-       ========================= */
+       ========================================================= */
     header {
       text-align: center;
       margin-bottom: 36px;
-      padding: 30px 20px;
+      padding: 32px 24px;
       background: #FFFFFF;
-      border-radius: 24px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      border-radius: 28px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
       border: 2px solid #E2E8F0;
     }
 
     .badge {
       display: inline-block;
-      background-color: #E0E7FF;
-      color: #3730A3;
+      background-color: #EEF2FF;
+      color: #4338CA;
       font-size: 0.95rem;
       font-weight: 700;
-      padding: 6px 16px;
+      padding: 6px 18px;
       border-radius: 999px;
       margin-bottom: 12px;
+      border: 1px solid #C7D2FE;
     }
 
     header h1 {
-      font-size: 2.1rem;
+      font-size: 2.2rem;
       font-weight: 700;
       color: #0F172A;
       margin-bottom: 8px;
+      letter-spacing: -0.5px;
     }
 
     header p {
@@ -87,63 +85,54 @@
       color: var(--text-muted);
     }
 
-    /* =========================
-       分類標題
-       ========================= */
+    /* =========================================================
+       工具清單與卡片網格 (雙卡片自適應置中排版)
+       ========================================================= */
     .section-title {
       font-size: 1.45rem;
       font-weight: 700;
-      margin: 36px 0 18px 8px;
+      margin: 30px 0 20px 8px;
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    /* =========================
-       卡片網格 (自動響應式排列)
-       ========================= */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 28px;
     }
 
     /* 單張工具卡片 */
     .card {
       background: var(--card-bg);
-      border-radius: 20px;
+      border-radius: 24px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      border: 3px solid #E2E8F0;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      border: 3.5px solid #E2E8F0;
+      box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.05);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
     }
 
     .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.08);
+      transform: translateY(-6px);
+      box-shadow: 0 16px 28px -4px rgba(0, 0, 0, 0.1);
     }
 
-    /* 卡片主題色 */
+    /* 卡片主題色邊框 */
     .card.theme-geometry {
       border-color: var(--border-geometry);
     }
     .card.theme-math {
       border-color: var(--border-math);
     }
-    .card.theme-life {
-      border-color: var(--border-life);
-    }
-    .card.theme-purple {
-      border-color: var(--border-purple);
-    }
 
-    /* =========================
-       卡片預覽區塊 (支援純 CSS 動畫、影片與圖片)
-       ========================= */
+    /* =========================================================
+       卡片預覽區塊 (純 CSS 幾何微動畫，零外部檔案依賴)
+       ========================================================= */
     .card-preview {
-      height: 180px;
+      height: 190px;
       width: 100%;
       background: linear-gradient(135deg, #1E293B, #0F172A);
       border-bottom: 2px solid #E2E8F0;
@@ -154,90 +143,95 @@
       justify-content: center;
     }
 
-    /* 支援外部圖片/影片模式 (若使用檔案) */
-    .card-preview img,
-    .card-preview video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    /* 動態標籤 */
     .anim-badge {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(15, 23, 42, 0.75);
+      top: 12px;
+      right: 12px;
+      background: rgba(15, 23, 42, 0.8);
       color: #F8FAFC;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
+      padding: 4px 10px;
+      border-radius: 8px;
       backdrop-filter: blur(4px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       z-index: 2;
     }
 
     /* -------------------------------------------
-       ✨ 免錄影方案：純 CSS 幾何微動畫 1 (四邊形擺動變換)
+       ✨ 動畫 1：四邊形變換與對稱風箏微動畫
        ------------------------------------------- */
-    .css-anim-quad {
-      width: 110px;
-      height: 70px;
+    .css-anim-quad-kite {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* 自動變形的四邊形 */
+    .morph-quad {
+      width: 90px;
+      height: 65px;
       background: linear-gradient(135deg, #F59E0B, #FBBF24);
       border: 3px solid #FEF3C7;
       border-radius: 8px;
       box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35);
-      animation: quadMorph 4s ease-in-out infinite alternate;
+      animation: quadMorph 4.5s ease-in-out infinite alternate;
     }
 
     @keyframes quadMorph {
       0% {
-        transform: skewX(-18deg) scale(1);
-        border-radius: 6px;
+        transform: skewX(-18deg);
       }
       50% {
-        transform: skewX(0deg) scale(1.05); /* 變為長方形 */
-        border-radius: 12px;
+        transform: skewX(0deg) scale(1.05); /* 長方形 */
       }
       100% {
-        transform: skewX(18deg) scale(1);
-        border-radius: 4px;
+        transform: skewX(18deg);
       }
     }
 
+    /* 風箏（鳶形）飄動圖示 */
+    .flying-kite {
+      font-size: 3rem;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.3));
+      animation: kiteHover 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes kiteHover {
+      0% { transform: translateY(-4px) rotate(-8deg); }
+      100% { transform: translateY(6px) rotate(10deg); }
+    }
+
     /* -------------------------------------------
-       ✨ 免錄影方案：純 CSS 幾何微動畫 2 (平行四邊形剪切平移)
+       ✨ 動畫 2：平行四邊形剪切平移拼接動畫
        ------------------------------------------- */
     .css-anim-cut-stage {
       position: relative;
-      width: 160px;
+      width: 170px;
       height: 75px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    /* 主體梯形/四邊形 */
     .cut-shape-base {
-      width: 90px;
-      height: 60px;
+      width: 95px;
+      height: 62px;
       background: #3B82F6;
       border: 2px solid #BFDBFE;
       transform: skewX(-20deg);
       border-radius: 4px;
     }
 
-    /* 被剪下並滑動拼接的三角形塊 */
     .cut-piece-sliding {
-      width: 28px;
-      height: 60px;
+      width: 30px;
+      height: 62px;
       background: #60A5FA;
       border: 2px dashed #FFFFFF;
       clip-path: polygon(0 0, 100% 0, 0 100%);
       position: absolute;
-      left: 15px;
-      animation: cutSlide 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      left: 16px;
+      animation: cutSlide 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
     }
 
     @keyframes cutSlide {
@@ -246,7 +240,7 @@
         opacity: 0.9;
       }
       60%, 80% {
-        transform: translateX(95px); /* 移動到右側拼成長方形 */
+        transform: translateX(100px); /* 滑動到右側拼成長方形 */
         opacity: 1;
       }
       100% {
@@ -255,68 +249,93 @@
       }
     }
 
-    /* 剪刀剪切圖示 */
     .cut-icon {
       position: absolute;
-      top: 5px;
-      left: 30px;
-      font-size: 1.3rem;
+      top: 4px;
+      left: 32px;
+      font-size: 1.4rem;
       animation: scissorSnip 1.2s ease-in-out infinite;
     }
 
     @keyframes scissorSnip {
       0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-4px) rotate(-15deg); }
+      50% { transform: translateY(-5px) rotate(-18deg); }
     }
 
-    /* =========================
-       卡片文字內容與按鈕
-       ========================= */
+    /* =========================================================
+       卡片內容與標籤
+       ========================================================= */
     .card-body {
-      padding: 22px;
+      padding: 24px;
       display: flex;
       flex-direction: column;
       flex-grow: 1;
     }
 
+    .tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
     .card-tag {
-      align-self: flex-start;
       font-size: 0.85rem;
       font-weight: 700;
       padding: 4px 10px;
       border-radius: 8px;
-      margin-bottom: 12px;
       background-color: #F1F5F9;
       color: #475569;
     }
 
+    .card-tag.highlight {
+      background-color: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FDE68A;
+    }
+
     .card-title {
-      font-size: 1.35rem;
+      font-size: 1.4rem;
       font-weight: 700;
       color: var(--text-main);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .card-desc {
-      font-size: 1rem;
+      font-size: 1.02rem;
       color: var(--text-muted);
-      margin-bottom: 22px;
+      margin-bottom: 24px;
       flex-grow: 1;
+      line-height: 1.65;
+    }
+
+    /* 內嵌特色清單（讓學生/家長知道裡面有什麼） */
+    .sub-features {
+      list-style: none;
+      background: #F8FAFC;
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      font-size: 0.92rem;
+      color: #334155;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
     }
 
     .card-button {
       display: block;
       width: 100%;
       text-align: center;
-      padding: 14px 16px;
+      padding: 15px 18px;
       background-color: var(--primary);
       color: #FFFFFF;
       text-decoration: none;
       font-size: 1.15rem;
       font-weight: 700;
-      border-radius: 14px;
+      border-radius: 16px;
       transition: background-color 0.2s ease, transform 0.1s ease;
-      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.25);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
     }
 
     .card-button:hover {
@@ -342,9 +361,9 @@
   <div class="container">
     <!-- 頁首標題區塊 -->
     <header>
-      <span class="badge">🎒 互動學習專區</span>
+      <span class="badge">🎒 互動教學專區</span>
       <h1>自主學習與互動工具傳送門</h1>
-      <p>點選下方卡片，一起動動手探索好玩的互動工具吧！</p>
+      <p>點選下方卡片，一起動動手探索好玩的幾何與動手做工具！</p>
     </header>
 
     <!-- 互動教材卡片區 -->
@@ -352,31 +371,41 @@
     <div class="grid">
 
       <!-- ==========================================
-           卡片 1：四邊形探索工具 (免錄影：純 CSS 幾何變換動畫)
+           卡片 1：四邊形探索工具（含風箏製作與對稱）
            ========================================== -->
       <article class="card theme-geometry">
         <div class="card-preview">
-          <span class="anim-badge">✨ 幾何互動</span>
-          <!-- 免錄影、免檔案的純 CSS 幾何微動畫 -->
-          <div class="css-anim-quad" title="四邊形自動變化示範"></div>
+          <span class="anim-badge">✨ 幾何變形 ＆ 風箏</span>
+          <div class="css-anim-quad-kite">
+            <div class="morph-quad" title="四邊形自動形變"></div>
+            <div class="flying-kite" title="風箏對稱探索">🪁</div>
+          </div>
         </div>
         <div class="card-body">
-          <span class="card-tag">四邊形認知單元</span>
-          <h3 class="card-title">四邊形探索工具 (Quadrilateral)</h3>
-          <p class="card-desc">觀察四邊形的邊長、平行與角度變化，透過動態拉動感受各種四邊形的特性！</p>
+          <div class="tags-row">
+            <span class="card-tag">四邊形認知</span>
+            <span class="card-tag highlight">🪁 內含風箏工藝分頁</span>
+          </div>
+          <h3 class="card-title">四邊形探索與風箏工藝</h3>
+          <p class="card-desc">
+            觀察四邊形的邊長、平行與角度變化；單元內更包含<strong>「傳統風箏製作」</strong>頁面，帶領孩子動手探索生活中的鳶形與對稱之美！
+          </p>
+          <ul class="sub-features">
+            <li>🔹 互動拉動：探索正方形、長方形、平行四邊形</li>
+            <li>🔹 特別單元：風箏製作步驟與對稱軸探索</li>
+          </ul>
           <a href="quadrilateral.html" class="card-button">
-            👉 點我開始探索
+            👉 進入四邊形與風箏探索
           </a>
         </div>
       </article>
 
       <!-- ==========================================
-           卡片 2：平行四邊形剪切工具 (免錄影：純 CSS 剪切拼貼動畫)
+           卡片 2：平行四邊形剪切工具
            ========================================== -->
       <article class="card theme-math">
         <div class="card-preview">
-          <span class="anim-badge">✂️ 剪切拼貼</span>
-          <!-- 免錄影的剪切與滑動拼接動態 -->
+          <span class="anim-badge">✂️ 剪切拼貼動態</span>
           <div class="css-anim-cut-stage">
             <div class="cut-shape-base"></div>
             <div class="cut-piece-sliding"></div>
@@ -384,32 +413,20 @@
           </div>
         </div>
         <div class="card-body">
-          <span class="card-tag">四邊形面積單元</span>
+          <div class="tags-row">
+            <span class="card-tag">四邊形面積單元</span>
+            <span class="card-tag">動手操作</span>
+          </div>
           <h3 class="card-title">平行四邊形剪切工具</h3>
-          <p class="card-desc">動手拖曳與剪切幾何圖形，把平行四邊形拼成長方形，發現面積計算的秘密！</p>
+          <p class="card-desc">
+            動手拖曳與剪切幾何圖形，透過「剪下直角三角形、平移拼成長方形」的視覺化步驟，輕鬆理解面積公式「底 × 高」的由來！
+          </p>
+          <ul class="sub-features">
+            <li>🔹 直覺剪切：自訂高與切割線</li>
+            <li>🔹 動態平移：平滑滑動拼接成長方形</li>
+          </ul>
           <a href="parallelogram_cut_tool.html" class="card-button">
             👉 點我開始剪剪看
-          </a>
-        </div>
-      </article>
-
-      <!-- ==========================================
-           卡片 3：第三個工具 (靜態圖片/Emoji 備用模式)
-           ========================================== -->
-      <article class="card theme-life">
-        <div class="card-preview" style="font-size: 4rem;">
-          <img 
-            src="images/tool3.png" 
-            alt="第三個工具預覽"
-            onerror="this.style.display='none'; this.parentElement.innerText='🪁';"
-          >
-        </div>
-        <div class="card-body">
-          <span class="card-tag">生活幾何單元</span>
-          <h3 class="card-title">風箏製作與對稱探索</h3>
-          <p class="card-desc">觀察生活中的鳶形與對稱之美，透過手作與幾何結合，體驗有趣的造型變化！</p>
-          <a href="tool3.html" class="card-button">
-            👉 點我開始體驗
           </a>
         </div>
       </article>
@@ -418,7 +435,7 @@
 
     <!-- 頁尾 -->
     <footer>
-      <p>💡 建議使用平板電腦（iPad）或電腦瀏覽，搭配觸控操作效果最佳。</p>
+      <p>💡 建議使用平板電腦（iPad）或觸控電腦瀏覽，操作體驗最佳。</p>
     </footer>
   </div>
 
