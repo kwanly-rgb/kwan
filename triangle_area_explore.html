@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>探索三角形面積公式</title>
+<title>三角形面積探究教學工具 (一鍵高輔助線版)</title>
 <style>
   :root {
     --primary: #00796b;
@@ -138,7 +138,7 @@
 
 <div class="container">
   <header>
-    <h1>📐 探索三角形面積公式</h1>
+    <h1>📐 三角形面積探究教學工具 (高輔助線升級版)</h1>
     <p class="subtitle">頂點完全交會於格線 ➔ 一鍵切換高輔助線 ➔ 自由探究對角線</p>
   </header>
 
@@ -280,3 +280,600 @@
           <select id="q_overlap_r">
             <option value="">--請選擇--</option>
             <option value="重合">重合（完全一樣大）</option>
+            <option value="不重合">不重合</option>
+          </select>
+          <span>，所以 1 個直角三角形面積正好是長方形面積的</span>
+          <select id="q_half_r">
+            <option value="">--請選擇--</option>
+            <option value="一半">一半（÷ 2）</option>
+            <option value="兩倍">兩倍（× 2）</option>
+          </select>
+          <span>。</span>
+          <button class="check-btn btn-rect-theme" onclick="checkRectAnswers()">檢查答案</button>
+          <span id="fbRect" class="feedback-msg"></span>
+        </div>
+        <div id="bannerRect" class="summary-banner" style="display:none;">
+          🎉 答對了！這就是為什麼一定要沿對角線剪開：<br>
+          只有對角線能切出 2 個完全全等的三角形，因此：<br>
+          <b>長方形面積 ÷ 2 ＝ 直角三角形面積 ＝ ( 長 × 闊 ) ÷ 2</b>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== TAB 2: 平行四邊形探究 ==================== -->
+  <div id="tabPara" class="tab-content">
+    <div class="step-bar">
+      <div id="step-p1" class="step-item active para-active">① 自由拖曳切點</div>
+      <div id="step-p2" class="step-item">② 剪開成兩份</div>
+      <div id="step-p3" class="step-item">③ 疊合對比驗證</div>
+      <div id="step-p4" class="step-item">④ 歸納面積公式</div>
+    </div>
+
+    <div id="statusBoxPara" class="cut-status-box status-diagonal">
+      <span id="statusTextPara">🟢 目前狀態：這是一條標準對角線！（連接頂點 D 與頂點 B）</span>
+      <span style="font-size: 13px;">可拖動圖上的粉紅圓點試試其他位置！</span>
+    </div>
+
+    <!-- SVG 畫布 -->
+    <div class="canvas-wrapper">
+      <svg id="svgPara" viewBox="0 0 780 330" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="gridPara" width="30" height="30" patternUnits="userSpaceOnUse">
+            <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#cbd5e1" stroke-width="1.2"/>
+          </pattern>
+          <marker id="arrowPurpleP" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#8e24aa"/>
+          </marker>
+          <marker id="arrowGreenP" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#2e7d32"/>
+          </marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#gridPara)" />
+        <polygon points="180,210 420,210 510,60 270,60" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6,4" />
+
+        <!-- 圖形 A -->
+        <g id="groupPA">
+          <polygon id="polyPA" points="180,210 420,210 270,60" fill="#ffe082" stroke="#ff8f00" stroke-width="2.5" />
+          <text id="labelPA" x="290" y="175" font-size="20" font-weight="bold" fill="#ff8f00" opacity="0.8">A</text>
+        </g>
+
+        <!-- 圖形 B -->
+        <g id="groupPB" style="transform-origin: 345px 135px; transition: transform 1s ease-in-out; opacity: 0.75;">
+          <polygon id="polyPB" points="270,60 510,60 420,210" fill="#80cbc4" stroke="#004d40" stroke-width="2.5" />
+          <text id="labelPB" x="400" y="110" font-size="20" font-weight="bold" fill="#004d40" opacity="0.8">B</text>
+        </g>
+
+        <!-- 🌟 一鍵顯示/隱藏的平行四邊形內部「高」輔助線群組 🌟 -->
+        <g id="heightAuxGroup" style="transition: opacity 0.3s ease;">
+          <!-- 內部垂直虛線：從頂點 D(270,60) 直通底邊 (270,210) -->
+          <line x1="270" y1="60" x2="270" y2="210" stroke="#2e7d32" stroke-width="3" stroke-dasharray="6,4" />
+          <!-- 直角符號 (14px 垂直接觸標記) -->
+          <path d="M 270 196 L 284 196 L 284 210" fill="none" stroke="#2e7d32" stroke-width="2" />
+          <!-- 高度數值小標籤 -->
+          <rect x="278" y="123" width="76" height="24" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5" />
+          <text x="316" y="140" fill="#2e7d32" font-size="13" font-weight="bold" text-anchor="middle">高 = 5 cm</text>
+        </g>
+
+        <!-- 側邊垂直高標註 (連動控制) -->
+        <g id="heightSideDimGroup" style="transition: opacity 0.3s ease;">
+          <line x1="150" y1="60" x2="150" y2="210" stroke="#2e7d32" stroke-width="4.5" />
+          <line x1="120" y1="60" x2="120" y2="210" stroke="#2e7d32" stroke-width="2" marker-start="url(#arrowGreenP)" marker-end="url(#arrowGreenP)" />
+          <text x="80" y="130" fill="#2e7d32" font-weight="bold" font-size="15" text-anchor="middle">高 ＝ 5 cm</text>
+          <text x="80" y="150" fill="#2e7d32" font-size="12" text-anchor="middle">（共 5 格）</text>
+        </g>
+
+        <!-- 剪切線 -->
+        <line id="cutLineP" x1="270" y1="60" x2="420" y2="210" stroke="#e91e63" stroke-width="3" stroke-dasharray="6,4" />
+        <text id="scissorsP" x="345" y="135" font-size="22" text-anchor="middle" dominant-baseline="central">✂️</text>
+
+        <!-- 紫色底邊 (Y=210) -->
+        <g>
+          <line x1="180" y1="210" x2="420" y2="210" stroke="#8e24aa" stroke-width="4.5" />
+          <line x1="180" y1="240" x2="420" y2="240" stroke="#8e24aa" stroke-width="2" marker-start="url(#arrowPurpleP)" marker-end="url(#arrowPurpleP)" />
+          <text x="300" y="260" fill="#8e24aa" font-weight="bold" font-size="15" text-anchor="middle">底 ＝ 8 cm （共 8 格）</text>
+        </g>
+
+        <!-- 頂點圓圈 -->
+        <circle cx="180" cy="210" r="4.5" fill="#475569" />
+        <text x="170" y="230" font-size="14" font-weight="bold" fill="#475569">A</text>
+
+        <circle cx="420" cy="210" r="4.5" fill="#475569" />
+        <text x="430" y="230" font-size="14" font-weight="bold" fill="#475569">B</text>
+
+        <circle cx="510" cy="60" r="4.5" fill="#475569" />
+        <text x="520" y="55" font-size="14" font-weight="bold" fill="#475569">C</text>
+
+        <circle cx="270" cy="60" r="4.5" fill="#475569" />
+        <text x="260" y="55" font-size="14" font-weight="bold" fill="#475569">D</text>
+
+        <!-- 拖曳手柄 -->
+        <g id="dragHandleP" class="drag-handle-group">
+          <g id="badgeP" transform="translate(420, 185)">
+            <rect x="-38" y="-20" width="76" height="20" rx="10" fill="#e91e63" />
+            <text x="0" y="-6" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">👈 拖我 👉</text>
+          </g>
+          <circle id="pulseRingP" class="drag-pulse-ring" cx="420" cy="210" r="10" fill="none" stroke="#e91e63" stroke-width="2" />
+          <circle id="pointCircleP" cx="420" cy="210" r="9" fill="#e91e63" stroke="#ffffff" stroke-width="2.5" />
+          <circle id="hitAreaP" cx="420" cy="210" r="28" fill="transparent" />
+        </g>
+      </svg>
+    </div>
+
+    <!-- 操作面板 -->
+    <div class="control-panel">
+      <div class="card">
+        <div class="card-title">📍 操作與輔助線開關</div>
+        <!-- 🌟 一鍵顯示/隱藏垂直高按鈕 🌟 -->
+        <div style="margin-bottom: 10px;">
+          <button id="btnToggleHeight" class="btn-toggle-h" style="width: 100%;" onclick="toggleHeightGuide()">
+            🟢 垂直高輔助線：顯示中（點擊可隱藏）
+          </button>
+        </div>
+        <div class="btn-group" style="margin-bottom: 10px;">
+          <button class="btn-secondary" onclick="snapCut('para', 420)">📐 吸附至頂點 B (對角線)</button>
+          <button class="btn-secondary" onclick="snapCut('para', 300)">✂️ 移至底邊中點 (非對角線)</button>
+        </div>
+        <div class="btn-group">
+          <button id="btnCutP" class="btn-cut" onclick="triggerCut('para')">✂️ 剪開</button>
+          <button id="btnOverlapP" class="btn-overlap" onclick="triggerOverlap('para')" disabled>🔄 旋轉疊合</button>
+          <button class="btn-secondary" onclick="resetAll('para')">🔄 重置</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">💡 探究提示與對比</div>
+        <p id="tipTextPara" style="margin: 0; font-size: 14px; line-height: 1.6; color: #546e7a;">
+          可以點擊上方按鈕<b>隱藏輔助線</b>，讓學生先數數看高是多少格；再<b>開啟輔助線</b>檢查對準垂直直角的綠線！
+        </p>
+      </div>
+    </div>
+
+    <!-- 答題互動 -->
+    <div class="task-card para-task">
+      <div class="task-header para-th">✏️ 思考與填空練習</div>
+      <div class="task-body">
+        <div class="interactive-row">
+          <span>1. 數一數方格：平行四邊形的紫色底是</span>
+          <input type="number" id="q_base" placeholder="？">
+          <span>cm，綠色垂直高是</span>
+          <input type="number" id="q_height" placeholder="？">
+          <span>cm。</span>
+        </div>
+        <div class="interactive-row">
+          <span>2. 沿著<b>對角線剪開</b>後，得到的兩個三角形面積是</span>
+          <select id="q_same_p">
+            <option value="">--請選擇--</option>
+            <option value="相同">相同（完全重合）</option>
+            <option value="不同">不同</option>
+          </select>
+          <span>的。</span>
+        </div>
+        <div class="interactive-row">
+          <span>3. 因此，1 個三角形面積是平行四邊形面積的</span>
+          <select id="q_half_p">
+            <option value="">--請選擇--</option>
+            <option value="一半">一半（÷ 2）</option>
+            <option value="兩倍">兩倍（× 2）</option>
+          </select>
+          <span>。</span>
+        </div>
+        
+        <!-- 細緻化公式選填區 -->
+        <div class="interactive-row" style="margin-top: 15px; background: #e0f2f1; padding: 12px; border-radius: 8px; border: 1.5px dashed var(--primary);">
+          <span>👉 <b>終極公式歸納：</b></span>
+          <span>三角形面積 ＝</span>
+          <select id="f_base" class="formula-select">
+            <option value="">--</option>
+            <option value="底">底</option>
+            <option value="邊">邊</option>
+          </select>
+          <span>×</span>
+          <select id="f_height" class="formula-select">
+            <option value="">--</option>
+            <option value="高">高</option>
+            <option value="闊">闊</option>
+          </select>
+          <select id="f_sign" class="formula-select">
+            <option value="">--</option>
+            <option value="÷">÷</option>
+            <option value="＋">＋</option>
+          </select>
+          <input type="number" id="f_num" placeholder="？" style="width: 60px;">
+          
+          <button class="check-btn btn-para-theme" onclick="checkParaAnswers()">檢查答案</button>
+          <span id="fbPara" class="feedback-msg"></span>
+        </div>
+        
+        <div id="bannerPara" class="summary-banner" style="display:none;">
+          🎉 恭喜你！完全正確！你已透過選取與填空成功推導出終極三角形公式：<br>
+          <b>三角形面積 ＝ 平行四邊形面積 ÷ 2 ＝ 底 × 高 ÷ 2</b>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 幾何常數（全為 30px 的倍數）
+  const R_BASE_START = 240, R_BASE_END = 480, R_TOP_X = 240, R_TOP_Y = 60, R_BOT_Y = 210;
+  const P_BASE_START = 180, P_BASE_END = 420, P_TOP_X = 270, P_TOP_Y = 60, P_BOT_Y = 210;
+
+  let stateR = { cutX: 480, isCut: false, isOverlapped: false, isDragging: false };
+  let stateP = { cutX: 420, isCut: false, isOverlapped: false, isDragging: false, showHeight: true };
+
+  // 1. 分頁切換
+  function switchTab(tabName) {
+    document.getElementById('tabRectBtn').classList.toggle('active', tabName === 'rect');
+    document.getElementById('tabParaBtn').classList.toggle('active', tabName === 'para');
+    document.getElementById('tabRect').classList.toggle('active', tabName === 'rect');
+    document.getElementById('tabPara').classList.toggle('active', tabName === 'para');
+  }
+
+  // 2. 步驟燈
+  function updateStepBar(type, stepNum) {
+    const prefix = type === 'rect' ? 'r' : 'p';
+    const activeClass = type === 'rect' ? 'rect-active' : 'para-active';
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById(`step-${prefix}${i}`);
+      if (el) {
+        el.classList.toggle('active', i === stepNum);
+        el.classList.toggle(activeClass, i === stepNum);
+      }
+    }
+  }
+
+  // 🌟 3. 一鍵切換垂直高輔助線邏輯 🌟
+  function toggleHeightGuide() {
+    stateP.showHeight = !stateP.showHeight;
+    applyHeightVisibility();
+  }
+
+  function applyHeightVisibility() {
+    const auxGroup = document.getElementById('heightAuxGroup');
+    const sideDim = document.getElementById('heightSideDimGroup');
+    const btn = document.getElementById('btnToggleHeight');
+
+    if (!auxGroup || !btn) return;
+
+    // 只有在未剪開時顯示；剪開後自動淡出防視覺重疊干擾
+    const visible = stateP.showHeight && !stateP.isCut;
+
+    auxGroup.style.opacity = visible ? 1 : 0;
+    auxGroup.style.pointerEvents = visible ? 'auto' : 'none';
+    if (sideDim) sideDim.style.opacity = visible ? 1 : 0;
+
+    if (stateP.showHeight) {
+      btn.className = 'btn-toggle-h';
+      btn.innerHTML = '🟢 垂直高輔助線：顯示中（點擊可隱藏）';
+    } else {
+      btn.className = 'btn-toggle-h hidden';
+      btn.innerHTML = '⚪ 垂直高輔助線：已隱藏（點擊可顯示）';
+    }
+  }
+
+  // 4. 更新圖形頂點與切線
+  function updateShapes(type) {
+    if (type === 'rect') {
+      const x = stateR.cutX;
+      const isDiag = (x === R_BASE_END);
+
+      document.getElementById('polyRA').setAttribute('points', `${R_TOP_X},${R_TOP_Y} ${R_BASE_START},${R_BOT_Y} ${x},${R_BOT_Y}`);
+      document.getElementById('polyRB').setAttribute('points', `${R_TOP_X},${R_TOP_Y} ${R_BASE_END},${R_TOP_Y} ${R_BASE_END},${R_BOT_Y} ${x},${R_BOT_Y}`);
+
+      const cutLine = document.getElementById('cutLineR');
+      cutLine.setAttribute('x2', x);
+      document.getElementById('scissorsR').setAttribute('x', (R_TOP_X + x) / 2);
+
+      document.getElementById('pointCircleR').setAttribute('cx', x);
+      document.getElementById('pulseRingR').setAttribute('cx', x);
+      document.getElementById('hitAreaR').setAttribute('cx', x);
+      document.getElementById('badgeR').setAttribute('transform', `translate(${x}, 185)`);
+
+      const sBox = document.getElementById('statusBoxRect');
+      const sText = document.getElementById('statusTextRect');
+      if (isDiag) {
+        sBox.className = 'cut-status-box status-diagonal';
+        sText.innerText = '🟢 目前狀態：這是一條標準對角線！（連接左上頂點與右下頂點）';
+      } else {
+        sBox.className = 'cut-status-box status-not-diagonal';
+        sText.innerText = `🟠 目前狀態：這不是對角線！（切在底邊長度 ${(x - R_BASE_START) / 30} cm 處）`;
+      }
+    } else {
+      const x = stateP.cutX;
+      const isDiag = (x === P_BASE_END);
+
+      document.getElementById('polyPA').setAttribute('points', `${P_TOP_X},${P_TOP_Y} ${P_BASE_START},${P_BOT_Y} ${x},${P_BOT_Y}`);
+      document.getElementById('polyPB').setAttribute('points', `${P_TOP_X},${P_TOP_Y} 510,${P_TOP_Y} ${P_BASE_END},${P_BOT_Y} ${x},${P_BOT_Y}`);
+
+      const cutLine = document.getElementById('cutLineP');
+      cutLine.setAttribute('x2', x);
+      document.getElementById('scissorsP').setAttribute('x', (P_TOP_X + x) / 2);
+
+      document.getElementById('pointCircleP').setAttribute('cx', x);
+      document.getElementById('pulseRingP').setAttribute('cx', x);
+      document.getElementById('hitAreaP').setAttribute('cx', x);
+      document.getElementById('badgeP').setAttribute('transform', `translate(${x}, 185)`);
+
+      const sBox = document.getElementById('statusBoxPara');
+      const sText = document.getElementById('statusTextPara');
+      if (isDiag) {
+        sBox.className = 'cut-status-box status-diagonal';
+        sText.innerText = '🟢 目前狀態：這是一條標準對角線！（連接頂點 D 與頂點 B）';
+      } else {
+        sBox.className = 'cut-status-box status-not-diagonal';
+        sText.innerText = `🟠 目前狀態：這不是對角線！（切在底邊長度 ${(x - P_BASE_START) / 30} cm 處）`;
+      }
+
+      applyHeightVisibility();
+    }
+  }
+
+  // 5. 剪開
+  function triggerCut(type) {
+    const s = type === 'rect' ? stateR : stateP;
+    s.isCut = true;
+
+    if (type === 'rect') {
+      document.getElementById('btnCutR').disabled = true;
+      document.getElementById('btnOverlapR').disabled = false;
+      document.getElementById('cutLineR').style.opacity = 0;
+      document.getElementById('scissorsR').style.opacity = 0;
+      document.getElementById('dragHandleR').style.display = 'none';
+
+      document.getElementById('groupRA').style.transform = 'translate(-10px, 10px)';
+      document.getElementById('groupRB').style.transform = 'translate(10px, -10px)';
+      updateStepBar('rect', 2);
+    } else {
+      document.getElementById('btnCutP').disabled = true;
+      document.getElementById('btnOverlapP').disabled = false;
+      document.getElementById('cutLineP').style.opacity = 0;
+      document.getElementById('scissorsP').style.opacity = 0;
+      document.getElementById('dragHandleP').style.display = 'none';
+
+      document.getElementById('groupPA').style.transform = 'translate(-10px, 10px)';
+      document.getElementById('groupPB').style.transform = 'translate(10px, -10px)';
+      updateStepBar('para', 2);
+      applyHeightVisibility(); // 剪開時自動隱藏內部高輔助線
+    }
+  }
+
+  // 6. 疊合對比
+  function triggerOverlap(type) {
+    const s = type === 'rect' ? stateR : stateP;
+    if (!s.isCut) return;
+    s.isOverlapped = true;
+
+    if (type === 'rect') {
+      document.getElementById('btnOverlapR').disabled = true;
+      document.getElementById('groupRA').style.transform = 'translate(0px, 0px)';
+      document.getElementById('groupRB').style.transform = 'rotate(180deg)';
+
+      const tip = document.getElementById('tipTextRect');
+      if (s.cutX === R_BASE_END) {
+        tip.innerHTML = '<b style="color:#2e7d32;">🎉 完美重合！</b> 因為這是一條對角線，兩個直角三角形完全一樣大，所以每個三角形面積是長方形的<b>一半（÷ 2）</b>！';
+      } else {
+        tip.innerHTML = '<b style="color:#c62828;">❌ 發現了嗎？無法重合！</b> 因為切點不在對角頂點上，兩塊大小不同（一塊小、一塊大），所以<b>不能</b>除以 2！';
+      }
+      updateStepBar('rect', 3);
+    } else {
+      document.getElementById('btnOverlapP').disabled = true;
+      document.getElementById('groupPA').style.transform = 'translate(0px, 0px)';
+      document.getElementById('groupPB').style.transform = 'rotate(180deg)';
+
+      const tip = document.getElementById('tipTextPara');
+      if (s.cutX === P_BASE_END) {
+        tip.innerHTML = '<b style="color:#2e7d32;">🎉 完美重合！</b> 沿對角線剪開的兩個斜三角形完全全等，面積剛好是平行四邊形的<b>一半（÷ 2）</b>！';
+      } else {
+        tip.innerHTML = '<b style="color:#c62828;">❌ 發現了嗎？完全錯位無法重合！</b> 非對角線切出來的兩份大小完全不相等，不能直接除以 2！';
+      }
+      updateStepBar('para', 3);
+    }
+  }
+
+  // 7. 重置與快選
+  function resetAll(type) {
+    if (type === 'rect') {
+      stateR.isCut = false;
+      stateR.isOverlapped = false;
+      document.getElementById('btnCutR').disabled = false;
+      document.getElementById('btnOverlapR').disabled = true;
+      document.getElementById('cutLineR').style.opacity = 1;
+      document.getElementById('scissorsR').style.opacity = 1;
+      document.getElementById('dragHandleR').style.display = 'block';
+      document.getElementById('groupRA').style.transform = 'translate(0,0)';
+      document.getElementById('groupRB').style.transform = 'translate(0,0)';
+      document.getElementById('tipTextRect').innerText = '試試看：先把切點移到「底邊中間」剪開並疊合，觀察兩塊會不會一樣大？再移回「對角頂點」看看有何不同！';
+      updateStepBar('rect', 1);
+    } else {
+      stateP.isCut = false;
+      stateP.isOverlapped = false;
+      document.getElementById('btnCutP').disabled = false;
+      document.getElementById('btnOverlapP').disabled = true;
+      document.getElementById('cutLineP').style.opacity = 1;
+      document.getElementById('scissorsP').style.opacity = 1;
+      document.getElementById('dragHandleP').style.display = 'block';
+      document.getElementById('groupPA').style.transform = 'translate(0,0)';
+      document.getElementById('groupPB').style.transform = 'translate(0,0)';
+      document.getElementById('tipTextPara').innerText = '可以點擊上方按鈕隱藏輔助線，讓學生先數數看高是多少格；再開啟輔助線檢查對準垂直直角的綠線！';
+      updateStepBar('para', 1);
+    }
+    updateShapes(type);
+  }
+
+  function snapCut(type, xVal) {
+    resetAll(type);
+    if (type === 'rect') stateR.cutX = xVal;
+    else stateP.cutX = xVal;
+    updateShapes(type);
+  }
+
+  // 8. 拖曳手柄邏輯
+  function initDragHandlers() {
+    function setupDrag(svgId, handleId, type, minX, maxX) {
+      const svg = document.getElementById(svgId);
+      const handle = document.getElementById(handleId);
+
+      function getCoords(e) {
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        return pt.matrixTransform(svg.getScreenCTM().inverse());
+      }
+
+      handle.addEventListener('pointerdown', (e) => {
+        resetAll(type);
+        if (type === 'rect') stateR.isDragging = true;
+        else stateP.isDragging = true;
+        handle.setPointerCapture(e.pointerId);
+        e.preventDefault();
+      });
+
+      handle.addEventListener('pointermove', (e) => {
+        const isD = type === 'rect' ? stateR.isDragging : stateP.isDragging;
+        if (!isD) return;
+        const coords = getCoords(e);
+        let curX = Math.round(coords.x);
+        curX = Math.max(minX, Math.min(maxX, curX));
+        if (type === 'rect') stateR.cutX = curX;
+        else stateP.cutX = curX;
+        updateShapes(type);
+      });
+
+      const stopDrag = (e) => {
+        if (type === 'rect') stateR.isDragging = false;
+        else stateP.isDragging = false;
+        try { handle.releasePointerCapture(e.pointerId); } catch(err){}
+      };
+
+      handle.addEventListener('pointerup', stopDrag);
+      handle.addEventListener('pointercancel', stopDrag);
+    }
+
+    setupDrag('svgRect', 'dragHandleR', 'rect', 270, 480);
+    setupDrag('svgPara', 'dragHandleP', 'para', 210, 420);
+  }
+
+  // 9. 答題驗證：長方形
+  function checkRectAnswers() {
+    const qNot = document.getElementById('q_test_not_diag_r').value;
+    const qOver = document.getElementById('q_overlap_r').value;
+    const qHalf = document.getElementById('q_half_r').value;
+    const fb = document.getElementById('fbRect');
+    const banner = document.getElementById('bannerRect');
+
+    if (qNot === '不同' && qOver === '重合' && qHalf === '一半') {
+      fb.className = 'feedback-msg feedback-success';
+      fb.innerText = '✅ 太棒了！你完全理解了對角線的重要性！';
+      banner.style.display = 'block';
+      updateStepBar('rect', 4);
+      startCelebration();
+    } else {
+      fb.className = 'feedback-msg feedback-error';
+      fb.innerText = '❌ 再想一想：不是對角線切出來的大小不同；只有對角線能切出重合的一半喔！';
+      banner.style.display = 'none';
+    }
+  }
+
+  // 10. 答題驗證：平行四邊形
+  function checkParaAnswers() {
+    const b = parseInt(document.getElementById('q_base').value, 10);
+    const h = parseInt(document.getElementById('q_height').value, 10);
+    const qSame = document.getElementById('q_same_p').value;
+    const qHalf = document.getElementById('q_half_p').value;
+    
+    const fBase = document.getElementById('f_base').value;
+    const fHeight = document.getElementById('f_height').value;
+    const fSign = document.getElementById('f_sign').value;
+    const fNum = parseInt(document.getElementById('f_num').value, 10);
+
+    const fb = document.getElementById('fbPara');
+    const banner = document.getElementById('bannerPara');
+
+    if (
+      b === 8 && h === 5 && 
+      qSame === '相同' && qHalf === '一半' && 
+      fBase === '底' && fHeight === '高' && fSign === '÷' && fNum === 2
+    ) {
+      fb.className = 'feedback-msg feedback-success';
+      fb.innerText = '✅ 完全正確！你已經非常熟悉三角形公式的推導細節了！';
+      banner.style.display = 'block';
+      updateStepBar('para', 4);
+      startCelebration();
+    } else {
+      fb.className = 'feedback-msg feedback-error';
+      fb.innerText = '❌ 再想一想：檢查填寫的公式各部分（底、高、除號 ÷、數值 2）與前面的數格結果！';
+      banner.style.display = 'none';
+    }
+  }
+
+  // 11. 慶祝五彩紙碎
+  const canvas = document.getElementById("celebrationCanvas");
+  const ctx = canvas.getContext("2d");
+  let confettiActive = false;
+  let confettiArray = [];
+  const colors = ["#ff5252", "#ffeb3b", "#2196f3", "#4caf50", "#e040fb", "#ff9100", "#00e5ff"];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+
+  class ConfettiPiece {
+    constructor() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * -100 - 20;
+      this.size = Math.random() * 8 + 6;
+      this.color = colors[Math.floor(Math.random() * colors.length)];
+      this.speedX = Math.random() * 4 - 2;
+      this.speedY = Math.random() * 3 + 4;
+      this.rotation = Math.random() * 360;
+      this.rotationSpeed = Math.random() * 4 - 2;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      this.rotation += this.rotationSpeed;
+    }
+    draw() {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate((this.rotation * Math.PI) / 180);
+      ctx.fillStyle = this.color;
+      ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+      ctx.restore();
+    }
+  }
+
+  function startCelebration() {
+    if (confettiActive) return;
+    confettiActive = true;
+    confettiArray = [];
+    for (let i = 0; i < 120; i++) confettiArray.push(new ConfettiPiece());
+    animateConfetti();
+    setTimeout(() => {
+      confettiActive = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }, 3500);
+  }
+
+  function animateConfetti() {
+    if (!confettiActive) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    confettiArray.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animateConfetti);
+  }
+
+  // 初始化
+  updateShapes('rect');
+  updateShapes('para');
+  document.addEventListener('DOMContentLoaded', () => {
+    initDragHandlers();
+    applyHeightVisibility();
+  });
+</script>
+</body>
+</html>
