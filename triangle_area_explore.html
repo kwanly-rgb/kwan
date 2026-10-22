@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>三角形面積探究教學工具 (一鍵高輔助線版)</title>
+<title>探索三角形面積公式</title>
 <style>
   :root {
     --primary: #00796b;
@@ -25,7 +25,11 @@
   .container { max-width: 960px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); position: relative; z-index: 2; }
   
   header { text-align: center; margin-bottom: 20px; }
-  h1 { margin: 0 0 6px 0; font-size: 26px; color: var(--primary); }
+  /* 標題與超連結樣式設定 */
+  header h1 { margin: 0 0 6px 0; font-size: 28px; }
+  header h1 a { color: var(--primary); text-decoration: none; border-bottom: 2px transparent solid; transition: border-color 0.2s; }
+  header h1 a:hover { border-bottom-color: var(--primary); }
+  
   p.subtitle { margin: 0; font-size: 15px; color: #004d40; font-weight: bold; }
 
   /* 慶祝動畫專用畫布 */
@@ -138,7 +142,12 @@
 
 <div class="container">
   <header>
-    <h1>📐 三角形面積探究教學工具 (高輔助線升級版)</h1>
+    <!-- 🌟 設定大標題文字與固定連結 🌟 -->
+    <h1>
+      <a href="https://kwanly-rgb.github.io/kwan/triangle_area_explore.html" target="_blank" title="開啟 探索三角形面積公式">
+        探索三角形面積公式
+      </a>
+    </h1>
     <p class="subtitle">頂點完全交會於格線 ➔ 一鍵切換高輔助線 ➔ 自由探究對角線</p>
   </header>
 
@@ -160,6 +169,7 @@
 
   <!-- ==================== TAB 1: 長方形探究 ==================== -->
   <div id="tabRect" class="tab-content active">
+    <!-- 步驟指示 -->
     <div class="step-bar">
       <div id="step-r1" class="step-item active rect-active">① 自由拖曳切點</div>
       <div id="step-r2" class="step-item">② 剪開成兩份</div>
@@ -167,6 +177,7 @@
       <div id="step-r4" class="step-item">④ 歸納面積公式</div>
     </div>
 
+    <!-- 即時狀態指示牌 -->
     <div id="statusBoxRect" class="cut-status-box status-diagonal">
       <span id="statusTextRect">🟢 目前狀態：這是一條標準對角線！（連接左上頂點與右下頂點）</span>
       <span style="font-size: 13px;">可拖動圖上的粉紅圓點試試其他位置！</span>
@@ -217,8 +228,8 @@
         <g>
           <line x1="240" y1="60" x2="240" y2="210" stroke="#2e7d32" stroke-width="4.5" />
           <line x1="210" y1="60" x2="210" y2="210" stroke="#2e7d32" stroke-width="2" marker-start="url(#arrowGreenR)" marker-end="url(#arrowGreenR)" />
-          <text x="165" y="140" fill="#2e7d32" font-weight="bold" font-size="15" text-anchor="middle">闊 ＝ 5 cm</text>
-          <text x="165" y="160" fill="#2e7d32" font-size="12" text-anchor="middle">（共 5 格）</text>
+          <text x="145" y="130" fill="#2e7d32" font-weight="bold" font-size="15" text-anchor="middle">闊 ＝ 5 cm</text>
+          <text x="145" y="152" fill="#2e7d32" font-size="12" text-anchor="middle">（共 5 格）</text>
         </g>
 
         <!-- 頂點圓圈 -->
@@ -294,7 +305,7 @@
         </div>
         <div id="bannerRect" class="summary-banner" style="display:none;">
           🎉 答對了！這就是為什麼一定要沿對角線剪開：<br>
-          只有對角線能切出 2 個完全全等的三角形，因此：<br>
+          擺脫隨意切割大小不一的困境，對角線一剪便是完美的「全等一半」：<br>
           <b>長方形面積 ÷ 2 ＝ 直角三角形面積 ＝ ( 長 × 闊 ) ÷ 2</b>
         </div>
       </div>
@@ -316,7 +327,7 @@
       <span style="font-size: 13px;">可拖動圖上的粉紅圓點試試其他位置！</span>
     </div>
 
-    <!-- SVG 畫布 -->
+    <!-- SVG 畫布 (平行四邊形頂點嚴格對齊網格交點) -->
     <div class="canvas-wrapper">
       <svg id="svgPara" viewBox="0 0 780 330" xmlns="http://www.w3.org/2000/svg">
         <defs>
@@ -346,28 +357,25 @@
           <text id="labelPB" x="400" y="110" font-size="20" font-weight="bold" fill="#004d40" opacity="0.8">B</text>
         </g>
 
-        <!-- 🌟 一鍵顯示/隱藏的平行四邊形內部「高」輔助線群組 🌟 -->
+        <!-- 一鍵顯示/隱藏的平行四邊形內部「高」輔助線群組（標籤移至垂線左側，徹底避開對角切線） -->
         <g id="heightAuxGroup" style="transition: opacity 0.3s ease;">
-          <!-- 內部垂直虛線：從頂點 D(270,60) 直通底邊 (270,210) -->
           <line x1="270" y1="60" x2="270" y2="210" stroke="#2e7d32" stroke-width="3" stroke-dasharray="6,4" />
-          <!-- 直角符號 (14px 垂直接觸標記) -->
           <path d="M 270 196 L 284 196 L 284 210" fill="none" stroke="#2e7d32" stroke-width="2" />
-          <!-- 高度數值小標籤 -->
-          <rect x="278" y="123" width="76" height="24" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5" />
-          <text x="316" y="140" fill="#2e7d32" font-size="13" font-weight="bold" text-anchor="middle">高 = 5 cm</text>
+          <rect x="188" y="123" width="76" height="24" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5" />
+          <text x="226" y="140" fill="#2e7d32" font-size="13" font-weight="bold" text-anchor="middle">高 = 5 cm</text>
         </g>
 
-        <!-- 側邊垂直高標註 (連動控制) -->
+        <!-- 側邊垂直高標註（距離加大至 X=140，文字在 X=65，預留 40px 間隙，徹底告別遮擋） -->
         <g id="heightSideDimGroup" style="transition: opacity 0.3s ease;">
-          <line x1="150" y1="60" x2="150" y2="210" stroke="#2e7d32" stroke-width="4.5" />
-          <line x1="120" y1="60" x2="120" y2="210" stroke="#2e7d32" stroke-width="2" marker-start="url(#arrowGreenP)" marker-end="url(#arrowGreenP)" />
-          <text x="80" y="130" fill="#2e7d32" font-weight="bold" font-size="15" text-anchor="middle">高 ＝ 5 cm</text>
-          <text x="80" y="150" fill="#2e7d32" font-size="12" text-anchor="middle">（共 5 格）</text>
+          <line x1="160" y1="60" x2="160" y2="210" stroke="#2e7d32" stroke-width="4.5" />
+          <line x1="140" y1="60" x2="140" y2="210" stroke="#2e7d32" stroke-width="2" marker-start="url(#arrowGreenP)" marker-end="url(#arrowGreenP)" />
+          <text x="65" y="130" fill="#2e7d32" font-weight="bold" font-size="15" text-anchor="middle">高 ＝ 5 cm</text>
+          <text x="65" y="152" fill="#2e7d32" font-size="12" text-anchor="middle">（共 5 格）</text>
         </g>
 
         <!-- 剪切線 -->
         <line id="cutLineP" x1="270" y1="60" x2="420" y2="210" stroke="#e91e63" stroke-width="3" stroke-dasharray="6,4" />
-        <text id="scissorsP" x="345" y="135" font-size="22" text-anchor="middle" dominant-baseline="central">✂️</text>
+        <text id="scissorsP" x="345" y="155" font-size="22" text-anchor="middle" dominant-baseline="central">✂️</text>
 
         <!-- 紫色底邊 (Y=210) -->
         <g>
@@ -406,7 +414,6 @@
     <div class="control-panel">
       <div class="card">
         <div class="card-title">📍 操作與輔助線開關</div>
-        <!-- 🌟 一鍵顯示/隱藏垂直高按鈕 🌟 -->
         <div style="margin-bottom: 10px;">
           <button id="btnToggleHeight" class="btn-toggle-h" style="width: 100%;" onclick="toggleHeightGuide()">
             🟢 垂直高輔助線：顯示中（點擊可隱藏）
@@ -425,7 +432,7 @@
       <div class="card">
         <div class="card-title">💡 探究提示與對比</div>
         <p id="tipTextPara" style="margin: 0; font-size: 14px; line-height: 1.6; color: #546e7a;">
-          可以點擊上方按鈕<b>隱藏輔助線</b>，讓學生先數數看高是多少格；再<b>開啟輔助線</b>檢查對準垂直直角的綠線！
+          可以點擊上方按鈕<b>隱藏輔助線</b>，讓學生先數數看高是多少格；再開啟輔助線檢查對準垂直直角的綠線！
         </p>
       </div>
     </div>
@@ -524,7 +531,7 @@
     }
   }
 
-  // 🌟 3. 一鍵切換垂直高輔助線邏輯 🌟
+  // 3. 一鍵切換垂直高輔助線
   function toggleHeightGuide() {
     stateP.showHeight = !stateP.showHeight;
     applyHeightVisibility();
@@ -537,7 +544,6 @@
 
     if (!auxGroup || !btn) return;
 
-    // 只有在未剪開時顯示；剪開後自動淡出防視覺重疊干擾
     const visible = stateP.showHeight && !stateP.isCut;
 
     auxGroup.style.opacity = visible ? 1 : 0;
@@ -635,7 +641,7 @@
       document.getElementById('groupPA').style.transform = 'translate(-10px, 10px)';
       document.getElementById('groupPB').style.transform = 'translate(10px, -10px)';
       updateStepBar('para', 2);
-      applyHeightVisibility(); // 剪開時自動隱藏內部高輔助線
+      applyHeightVisibility();
     }
   }
 
