@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>關老師的數學教學工具箱｜傳送門</title>
-<meta name="description" content="關麗瑩老師製作的互動教學小工具集合：四邊形、平行四邊形剪拼等。">
+<meta name="description" content="關麗瑩老師製作的互動教學小工具集合：四邊形特性、平行四邊形及三角形面積公式探索等。">
 <!-- QR code 產生器（約 20KB，離線亦可用） -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 <style>
@@ -91,7 +91,7 @@ footer a{color:var(--c1)}
 <body>
 <header>
  <h1>🧰 關老師的數學教學工具箱</h1>
- <p>互動教學小工具傳送門｜按卡片即可開啟，適合課堂示範、電子學習及家中自學</p>
+ <p>互動教學小工具傳送門｜按卡片即可開啟，適合課堂使用及家中進行自主學習</p>
  <div class="credit">網頁製作：關麗瑩老師</div>
 </header>
 
@@ -126,12 +126,17 @@ const TOOLS=[
  {icon:'🔷',title:'認識四邊形的特性',url:'quadrilateral.html',topic:'圖形與空間',
   tags:['正方形','長方形','平行四邊形','梯形','菱形','鷂形','釘板','七巧板','方格紙','窗櫺','風箏'],
   desc:'認識六種常見四邊形的特性；分辨正方形、長方形及菱形的異同；用方格紙、釘板、七巧板製作四邊形；認識中國傳統窗櫺及風箏非遺文化。',
-  color:'#2b6cb0',isNew:true,
+  color:'#2b6cb0',
   preview:{type:'live'}},
- {icon:'✂️',title:'平行四邊形剪拼工具',url:'parallelogram_cut_tool.html',topic:'度量',
-  tags:['平行四邊形','面積','剪拼','長方形','底','高'],
+ {icon:'✂️',title:'探索平行四邊形面積公式',url:'parallelogram_cut_tool.html',topic:'度量',
+  tags:['平行四邊形','面積','剪拼','長方形','底','高','公式'],
   desc:'把平行四邊形沿高剪開，拼成長方形，探究平行四邊形面積公式（底 × 高）的由來。',
   color:'#dd6b20',
+  preview:{type:'live'}},
+ {icon:'🔺',title:'探索三角形面積公式',url:'triangle_area_explore.html',topic:'度量',
+  tags:['三角形','面積','平行四邊形','長方形','底','高','公式','剪拼'],
+  desc:'把兩個全等三角形拼成平行四邊形，或把三角形剪拼成長方形，探究三角形面積公式（底 × 高 ÷ 2）的由來。',
+  color:'#38a169',isNew:true,
   preview:{type:'live'}},
 ];
 
