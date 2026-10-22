@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>三角形面積探究教學工具 (精確公式選填版)</title>
+<style>
+  :root {
+    --primary: #00796b;
+    --primary-light: #e0f2f1;
+    --rect-primary: #00796b;
+    --para-primary: #0277bd;
+    --base-purple: #8e24aa;
+    --base-purple-light: #f3e5f5;
+    --height-green: #2e7d32;
+    --height-green-light: #e8f5e9;
+    --cut-pink: #e91e63;
+    --text-main: #263238;
+    --success: #2e7d32;
+    --error: #c62828;
+  }
+
+  * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif; }
+  body { margin: 0; padding: 16px; background: #eceff1; color: var(--text-main); position: relative; }
+  .container { max-width: 960px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); position: relative; z-index: 2; }
+  
+  header { text-align: center; margin-bottom: 20px; }
+  h1 { margin: 0 0 6px 0; font-size: 26px; color: var(--primary); }
+  p.subtitle { margin: 0; font-size: 15px; color: #004d40; font-weight: bold; }
+
+  /* 慶祝動畫專用畫布 */
+  #celebrationCanvas {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; display: block;
+  }
+
+  /* 頂部分頁切換按鈕 */
+  .tab-container { display: flex; gap: 12px; margin-bottom: 20px; border-bottom: 3px solid #b2dfdb; padding-bottom: 8px; }
+  .tab-button {
+    flex: 1; padding: 12px 20px; font-size: 17px; font-weight: bold; border-radius: 12px 12px 0 0; border: none; cursor: pointer;
+    transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .tab-rect { background: #e0f2f1; color: #004d40; }
+  .tab-para { background: #e1f5fe; color: #01579b; }
+  .tab-rect.active { background: var(--rect-primary); color: #ffffff; }
+  .tab-para.active { background: var(--para-primary); color: #ffffff; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* 步驟引導條 */
+  .step-bar { display: flex; justify-content: space-between; margin-bottom: 16px; background: #f1f5f9; border-radius: 12px; padding: 8px 16px; gap: 8px; }
+  .step-item { flex: 1; text-align: center; font-size: 13px; font-weight: bold; padding: 6px 4px; border-radius: 8px; color: #94a3b8; background: transparent; }
+  .step-item.active { background: #ffffff; color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .rect-active { color: var(--rect-primary) !important; }
+  .para-active { color: var(--para-primary) !important; }
+
+  /* 顏色圖例 */
+  .color-legend { display: flex; justify-content: center; gap: 20px; margin-bottom: 16px; }
+  .legend-badge { padding: 6px 12px; border-radius: 30px; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; }
+  .badge-purple { background: var(--base-purple-light); color: var(--base-purple); border: 2px solid var(--base-purple); }
+  .badge-green { background: var(--height-green-light); color: var(--height-green); border: 2px solid var(--height-green); }
+
+  /* 狀態即時反饋指示牌 */
+  .cut-status-box {
+    margin-bottom: 12px; padding: 10px 16px; border-radius: 8px; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: space-between;
+  }
+  .status-diagonal { background: #e8f5e9; border: 2px solid #4caf50; color: #1b5e20; }
+  .status-not-diagonal { background: #fff3e0; border: 2px solid #ff9800; color: #e65100; }
+
+  /* 主畫布區 */
+  .canvas-wrapper { position: relative; width: 100%; background: #ffffff; border: 2px solid #cfd8dc; border-radius: 12px; overflow: hidden; margin-bottom: 16px; touch-action: none; }
+  svg { display: block; width: 100%; height: auto; user-select: none; }
+
+  /* 拖曳切點控制手柄 */
+  .drag-handle-group { cursor: ew-resize; touch-action: none; }
+  .drag-pulse-ring { animation: pulseGlow 1.8s infinite; transform-origin: center; }
+  @keyframes pulseGlow {
+    0% { r: 9px; opacity: 0.8; }
+    50% { r: 16px; opacity: 0.3; }
+    100% { r: 9px; opacity: 0.8; }
+  }
+
+  /* 控制盤 */
+  .control-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+  .card-title { font-weight: bold; font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; color: #37474f; }
+
+  .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  button {
+    font-size: 15px; font-weight: bold; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn-cut { background: var(--cut-pink); color: white; }
+  .btn-cut:hover { background: #c2185b; }
+  .btn-overlap { background: #0288d1; color: white; }
+  .btn-overlap:hover { background: #01579b; }
+  .btn-secondary { background: #eceff1; color: #37474f; border: 1px solid #cfd8dc; }
+  .btn-secondary:hover { background: #cfd8dc; }
+
+  /* 學生互動練習區 */
+  .task-card { border: 2px solid #bbf7d0; border-radius: 14px; padding: 18px; }
+  .task-card.rect-task { background: #f0fdf4; border-color: #bbf7d0; }
+  .task-card.para-task { background: #f0f9ff; border-color: #bae6fd; }
+  .task-header { font-size: 17px; font-weight: bold; margin-bottom: 12px; }
+  .task-header.rect-th { color: #166534; }
+  .task-header.para-th { color: #075985; }
+  .task-body { font-size: 16px; line-height: 1.8; color: #37474f; }
+  .interactive-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
+
+  select, input[type="number"] {
+    font-size: 16px; font-weight: bold; padding: 6px 12px; border: 2px solid #90a4ae; border-radius: 8px; background: white; color: #263238; cursor: pointer;
+  }
+  input[type="number"] { width: 75px; text-align: center; }
+
+  /* 公式特定下拉選單尺寸微調 */
+  .formula-select { min-width: 80px; text-align: center; }
+
+  .check-btn { padding: 6px 14px; font-size: 14px; border-radius: 8px; color: white; border: none; cursor: pointer; }
+  .btn-rect-theme { background: var(--rect-primary); }
+  .btn-para-theme { background: var(--para-primary); }
+  .feedback-msg { font-size: 15px; font-weight: bold; margin-left: 8px; }
+  .feedback-success { color: var(--success); }
+  .feedback-error { color: var(--error); }
+  
+  .summary-banner { background: #fff8e1; border: 2px dashed #ffb300; border-radius: 12px; padding: 16px; text-align: center; font-size: 18px; font-weight: bold; color: #e65100; margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<canvas id="celebrationCanvas"></canvas>
+
+<div class="container">
+  <header>
+    <h1>📐 三角形面積探究教學工具 (格線精準對齊版)</h1>
+    <p class="subtitle">頂點完全交會於格線 ➔ 數格算面積 ➔ 拖曳對比對角線</p>
+  </header>
+
+  <!-- 頂部分頁按鈕 -->
+  <div class="tab-container">
+    <button id="tabRectBtn" class="tab-button tab-rect active" onclick="switchTab('rect')">
+      🟩 第一部分：長方形探究
+    </button>
+    <button id="tabParaBtn" class="tab-button tab-para" onclick="switchTab('para')">
+      🔷 第二部分：平行四邊形探究
+    </button>
+  </div>
+
+  <div class="color-legend">
+    <div class="legend-badge badge-purple">🟣 紫色線 ＝ 底邊（8 cm ＝ 8 格）</div>
+    <div class="legend-badge badge-green">🟢 綠色線 ＝ 垂直高（5 cm ＝ 5 格）</div>
+  </div>
+
+
+  <!-- ==================== TAB 1: 長方形探究 ==================== -->
+  <div id="tabRect" class="tab-content active">
+    <!-- 步驟指示 -->
+    <div class="step-bar">
+      <div id="step-r1" class="step-item active rect-active">① 自由拖曳切點</div>
+      <div id="step-r2" class="step-item">② 剪開成兩份</div>
+      <div id="step-r3" class="step-item">③ 疊合對比驗證</div>
+      <div id="step-r4" class="step-item">④ 歸納面積公式</div>
+    </div>
+
+    <!-- 即時狀態指示牌 -->
+    <div id="statusBoxRect" class="cut-status-box status-diagonal">
+      <span id="statusTextRect">🟢 目前狀態：這是一條標準對角線！（連接左上頂點與右下頂點）</span>
+      <span style="font-size: 13px;">可拖動圖上的粉紅圓點試試其他位置！</span>
+    </div>
+
+    <!-- SVG 畫布 (長方形座標嚴格對齊：X: 240~480, Y: 60~210) -->
+    <div class="canvas-wrapper">
+      <svg id="svgRect" viewBox="0 0 780 330" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="gridRect" width="30" height="30" patternUnits="userSpaceOnUse">
+            <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#cbd5e1" stroke-width="1.2"/>
+          </pattern>
+          <marker id="arrowPurpleR" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#8e24aa"/>
+          </marker>
+          <marker id="arrowGreenR" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#2e7d32"/>
+          </marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#gridRect)" />
+        <rect x="240" y="60" width="240" height="150" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6,4" />
+
+        <!-- 圖形 A (底層) -->
+        <g id="groupRA">
+          <polygon id="polyRA" points="240,60 240,210 480,210" fill="#fff59d" stroke="#f57f17" stroke-width="2.5" />
+          <text id="labelRA" x="320" y="165" font-size="20" font-weight="bold" fill="#f57f17" opacity="0.8">A</text>
+        </g>
+
+        <!-- 圖形 B (頂層：半透明) -->
+        <g id="groupRB" style="transform-origin: 360px 135px; transition: transform 1s ease-in-out; opacity: 0.75;">
+          <polygon id="polyRB" points="240,60 480,60 480,210" fill="#a5d6a7" stroke="#2e7d32" stroke-width="2.5" />
+          <text id="labelRB" x="400" y="105" font-size="20" font-weight="bold" fill="#1b5e20" opacity="0.8">B</text>
+        </g>
+
+        <!-- 剪切線 -->
+        <line id="cutLineR" x1="240" y1="60" x2="480" y2="210" stroke="#e91e63" stroke-width="3" stroke-dasharray="6,4" />
+        <text id="scissorsR" x="360" y="135" font-size="22" text-anchor="middle" dominant-baseline="central">✂️</text>
+
+        <!-- 紫色邊 -->
+        <g>
+          <line x1="240" y1="210" x2="480" y2="210" stroke="#8e24aa" stroke-width="4.5" />
+          <line x1="240" y1="240" x2="480" y2="240" stroke="#8e24aa" stroke-width="2" marker-start="url(#arrowPurpleR)" marker-end="url(#arrowPurpleR)" />
+          <text x="360" y="260" fill="#8e24aa" font-weight="bold" font-size="15" text-anchor="middle">長 ＝ 8 cm （共 8 格）</text>
+        </g>
+
+        <!-- 綠色邊 -->
+        <g>
+          <line x1="240" y1="60" x2="240" y2="210" stroke="#2e7d32" stroke-width="4.5" />
+          <line x1="210" y1="60" x2="210" y2="210" stroke="#2e7d32" stroke-width="2" marker-start="url(#arrowGreenR)" marker-end="url(#arrowGreenR)" />
+          <text x="165" y="140" fill="#2e7d32" font-weight="bold" font-size="15" text-anchor="middle">闊 ＝ 5 cm</text>
+          <text x="165" y="160" fill="#2e7d32" font-size="12" text-anchor="middle">（共 5 格）</text>
+        </g>
+
+        <!-- 頂點圓圈 -->
+        <circle cx="240" cy="60" r="4.5" fill="#475569" />
+        <circle cx="480" cy="60" r="4.5" fill="#475569" />
+        <circle cx="240" cy="210" r="4.5" fill="#475569" />
+        <circle cx="480" cy="210" r="4.5" fill="#475569" />
+
+        <!-- 拖曳手柄 -->
+        <g id="dragHandleR" class="drag-handle-group">
+          <g id="badgeR" transform="translate(480, 185)">
+            <rect x="-38" y="-20" width="76" height="20" rx="10" fill="#e91e63" />
+            <text x="0" y="-6" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">👈 拖我 👉</text>
+          </g>
+          <circle id="pulseRingR" class="drag-pulse-ring" cx="480" cy="210" r="10" fill="none" stroke="#e91e63" stroke-width="2" />
+          <circle id="pointCircleR" cx="480" cy="210" r="9" fill="#e91e63" stroke="#ffffff" stroke-width="2.5" />
+          <circle id="hitAreaR" cx="480" cy="210" r="28" fill="transparent" />
+        </g>
+      </svg>
+    </div>
+
+    <!-- 操作面板 -->
+    <div class="control-panel">
+      <div class="card">
+        <div class="card-title">📍 操作與快選位置</div>
+        <div class="btn-group" style="margin-bottom: 10px;">
+          <button class="btn-secondary" onclick="snapCut('rect', 480)">📐 吸附至對角頂點 (對角線)</button>
+          <button class="btn-secondary" onclick="snapCut('rect', 360)">✂️ 移至底邊中點 (非對角線)</button>
+        </div>
+        <div class="btn-group">
+          <button id="btnCutR" class="btn-cut" onclick="triggerCut('rect')">✂️ 剪開</button>
+          <button id="btnOverlapR" class="btn-overlap" onclick="triggerOverlap('rect')" disabled>🔄 旋轉疊合</button>
+          <button class="btn-secondary" onclick="resetAll('rect')">🔄 重置</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">💡 探究提示與對比</div>
+        <p id="tipTextRect" style="margin: 0; font-size: 14px; line-height: 1.6; color: #546e7a;">
+          試試看：先把切點移到「底邊中間」剪開並疊合，觀察兩塊會不會一樣大？再移回「對角頂點」看看有何不同！
+        </p>
+      </div>
+    </div>
+
+    <!-- 答題互動 -->
+    <div class="task-card rect-task">
+      <div class="task-header rect-th">✏️ 思考與填空練習</div>
+      <div class="task-body">
+        <div class="interactive-row">
+          <span>1. 當我們<b>不沿對角線剪</b>（例如切在底邊中間）時，分出來的兩塊圖形大小是</span>
+          <select id="q_test_not_diag_r">
+            <option value="">--請選擇--</option>
+            <option value="不同">不同（無法重合）</option>
+            <option value="相同">相同（可以重合）</option>
+          </select>
+          <span>，這時<b>不能</b>直接除以 2。</span>
+        </div>
+        <div class="interactive-row">
+          <span>2. 只有<b>沿著對角線剪</b>，兩個直角三角形才能完全</span>
+          <select id="q_overlap_r">
+            <option value="">--請選擇--</option>
+            <option value="重合">重合（完全一樣大）</option>
+            <option value="不重合">不重合</option>
+          </select>
+          <span>，所以 1 個直角三角形面積正好是長方形面積的</span>
+          <select id="q_half_r">
+            <option value="">--請選擇--</option>
+            <option value="一半">一半（÷ 2）</option>
+            <option value="兩倍">兩倍（× 2）</option>
+          </select>
+          <span>。</span>
+          <button class="check-btn btn-rect-theme" onclick="checkRectAnswers()">檢查答案</button>
+          <span id="fbRect" class="feedback-msg"></span>
+        </div>
+        <div id="bannerRect" class="summary-banner" style="display:none;">
+          🎉 答對了！這就是為什麼一定要沿對角線剪開：<br>
+          只有對角線能切出 2 個完全全等的三角形，因此：<br>
+          <b>長方形面積 ÷ 2 ＝ 直角三角形面積 ＝ ( 長 × 闊 ) ÷ 2</b>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== TAB 2: 平行四邊形探究 ==================== -->
+  <div id="tabPara" class="tab-content">
+    <div class="step-bar">
+      <div id="step-p1" class="step-item active para-active">① 自由拖曳切點</div>
+      <div id="step-p2" class="step-item">② 剪開成兩份</div>
+      <div id="step-p3" class="step-item">③ 疊合對比驗證</div>
+      <div id="step-p4" class="step-item">④ 歸納面積公式</div>
+    </div>
+
+    <div id="statusBoxPara" class="cut-status-box status-diagonal">
+      <span id="statusTextPara">🟢 目前狀態：這是一條標準對角線！（連接頂點 D 與頂點 B）</span>
+      <span style="font-size: 13px;">可拖動圖上的粉紅圓點試試其他位置！</span>
+    </div>
+
+    <!-- SVG 畫布 (平行四邊形頂點嚴格對齊網格交點：A(180,210), B(420,210), C(510,60), D(270,60)) -->
+    <div class="canvas-wrapper">
+      <svg id="svgPara" viewBox="0 0 780 330" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="gridPara" width="30" height="30" patternUnits="userSpaceOnUse">
+            <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#cbd5e1" stroke-width="1.2"/>
+          </pattern>
+          <marker id="arrowPurpleP" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#8e24aa"/>
+          </marker>
+          <marker id="arrowGreenP" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 Z" fill="#2e7d32"/>
+          </marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#gridPara)" />
+        <polygon points="180,210 420,210 510,60 270,60" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6,4" />
+
+        <!-- 圖形 A (底層) -->
+        <g id="groupPA">
+          <polygon id="polyPA" points="180,210 420,210 270,60" fill="#ffe082" stroke="#ff8f00" stroke-width="2.5" />
+          <text id="labelPA" x="290" y="175" font-size="20" font-weight="bold" fill="#ff8f00" opacity="0.8">A</text>
+        </g>
+
+        <!-- 圖形 B (頂層：半透明) -->
+        <g id="groupPB" style="transform-origin: 345px 135px; transition: transform 1s ease-in-out; opacity: 0.75;">
+          <polygon id="polyPB" points="270,60 510,60 420,210" fill="#80cbc4" stroke="#004d40" stroke-width="2.5" />
+          <text id="labelPB" x="400" y="110" font-size="20" font-weight="bold" fill="#004d40" opacity="0.8">B</text>
+        </g>
+
+        <!-- 剪切線 -->
+        <line id="cutLineP" x1="270" y1="60" x2="420" y2="210" stroke="#e91e63" stroke-width="3" stroke-dasharray="6,4" />
+        <text id="scissorsP" x="345" y="155" font-size="22" text-anchor="middle" dominant-baseline="central">✂️</text>
+
+        <!-- 紫色底邊 -->
+        <g>
+          <line x1="180" y1="210" x2="420" y2="210" stroke="#8e24aa" stroke-width="4.5" />
+          <line x1="180" y1="240" x2="420" y2="240" stroke="#8e24aa" stroke-width="2" marker-start="url(#arrowPurpleP)" marker-end="url(#arrowPurpleP)" />
+          <text x="300" y="260" fill="#8e24aa" font-weight="bold" font-size="15" text-anchor="middle">底 ＝ 8 cm （共 8 格）</text>
+        </g>
+
+        <!-- 綠色垂直高 -->
+        <g>
+          <line x1="150" y1="60" x2="150" y2="210" stroke="#2e7d32" stroke-width="4.5" />
+          <line x1="120" y1="60" x2="120" y2="210" stroke="#2e7d32" stroke-width="2" marker-start="url(#arrowGreenP)" marker-end="url(#arrowGreenP)" />
+          <text x="80" y="130" fill="#2e7d32" font-weight="bold" font-size="15" text-anchor="middle">高 ＝ 5 cm</text>
+          <text x="80" y="150" fill="#2e7d32" font-size="12" text-anchor="middle">（共 5 格）</text>
+        </g>
+
+        <!-- 頂點圓圈 -->
+        <circle cx="180" cy="210" r="4.5" fill="#475569" />
+        <text x="170" y="230" font-size="14" font-weight="bold" fill="#475569">A</text>
+
+        <circle cx="420" cy="210" r="4.5" fill="#475569" />
+        <text x="430" y="230" font-size="14" font-weight="bold" fill="#475569">B</text>
+
+        <circle cx="510" cy="60" r="4.5" fill="#475569" />
+        <text x="520" y="55" font-size="14" font-weight="bold" fill="#475569">C</text>
+
+        <circle cx="270" cy="60" r="4.5" fill="#475569" />
+        <text x="260" y="55" font-size="14" font-weight="bold" fill="#475569">D</text>
+
+        <!-- 拖曳手柄 -->
+        <g id="dragHandleP" class="drag-handle-group">
+          <g id="badgeP" transform="translate(420, 185)">
+            <rect x="-38" y="-20" width="76" height="20" rx="10" fill="#e91e63" />
+            <text x="0" y="-6" fill="#ffffff" font-size="11" font-weight="bold" text-anchor="middle">👈 拖我 👉</text>
+          </g>
+          <circle id="pulseRingP" class="drag-pulse-ring" cx="420" cy="210" r="10" fill="none" stroke="#e91e63" stroke-width="2" />
+          <circle id="pointCircleP" cx="420" cy="210" r="9" fill="#e91e63" stroke="#ffffff" stroke-width="2.5" />
+          <circle id="hitAreaP" cx="420" cy="210" r="28" fill="transparent" />
+        </g>
+      </svg>
+    </div>
+
+    <!-- 操作面板 -->
+    <div class="control-panel">
+      <div class="card">
+        <div class="card-title">📍 操作與快選位置</div>
+        <div class="btn-group" style="margin-bottom: 10px;">
+          <button class="btn-secondary" onclick="snapCut('para', 420)">📐 吸附至頂點 B (對角線)</button>
+          <button class="btn-secondary" onclick="snapCut('para', 300)">✂️ 移至底邊中點 (非對角線)</button>
+        </div>
+        <div class="btn-group">
+          <button id="btnCutP" class="btn-cut" onclick="triggerCut('para')">✂️ 剪開</button>
+          <button id="btnOverlapP" class="btn-overlap" onclick="triggerOverlap('para')" disabled>🔄 旋轉疊合</button>
+          <button class="btn-secondary" onclick="resetAll('para')">🔄 重置</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">💡 探究提示與對比</div>
+        <p id="tipTextPara" style="margin: 0; font-size: 14px; line-height: 1.6; color: #546e7a;">
+          拖曳底邊切點：看看如果不是切到頂點 B，剪出來的兩塊疊合時會不會完全重合？
+        </p>
+      </div>
+    </div>
+
+    <!-- 答題互動 -->
+    <div class="task-card para-task">
+      <div class="task-header para-th">✏️ 思考與填空練習</div>
+      <div class="task-body">
+        <div class="interactive-row">
+          <span>1. 數一數方格：平行四邊形的紫色底是</span>
+          <input type="number" id="q_base" placeholder="？">
+          <span>cm，綠色垂直高是</span>
+          <input type="number" id="q_height" placeholder="？">
+          <span>cm。</span>
+        </div>
+        <div class="interactive-row">
+          <span>2. 沿著<b>對角線剪開</b>後，得到的兩個三角形面積是</span>
+          <select id="q_same_p">
+            <option value="">--請選擇--</option>
+            <option value="相同">相同（完全重合）</option>
+            <option value="不同">不同</option>
+          </select>
+          <span>的。</span>
+        </div>
+        <div class="interactive-row">
+          <span>3. 因此，1 個三角形面積是平行四邊形面積的</span>
+          <select id="q_half_p">
+            <option value="">--請選擇--</option>
+            <option value="一半">一半（÷ 2）</option>
+            <option value="兩倍">兩倍（× 2）</option>
+          </select>
+          <span>。</span>
+        </div>
+        
+        <!-- 🟣 升級：細緻化公式選填區 🟣 -->
+        <div class="interactive-row" style="margin-top: 15px; background: #e0f2f1; padding: 12px; border-radius: 8px; border: 1.5px dashed var(--primary);">
+          <span>👉 <b>終極公式歸納：</b></span>
+          <span>三角形面積 ＝</span>
+          <!-- 1. 選取：底 -->
+          <select id="f_base" class="formula-select">
+            <option value="">--</option>
+            <option value="底">底</option>
+            <option value="邊">邊</option>
+          </select>
+          <span>×</span>
+          <!-- 2. 選取：高 -->
+          <select id="f_height" class="formula-select">
+            <option value="">--</option>
+            <option value="高">高</option>
+            <option value="闊">闊</option>
+          </select>
+          <!-- 3. 選取：÷ -->
+          <select id="f_sign" class="formula-select">
+            <option value="">--</option>
+            <option value="÷">÷</option>
+            <option value="＋">＋</option>
+          </select>
+          <!-- 4. 填空：2 -->
+          <input type="number" id="f_num" placeholder="？" style="width: 60px;">
+          
+          <button class="check-btn btn-para-theme" onclick="checkParaAnswers()">檢查答案</button>
+          <span id="fbPara" class="feedback-msg"></span>
+        </div>
+        
+        <div id="bannerPara" class="summary-banner" style="display:none;">
+          🎉 恭喜你！完全正確！你已透過選取與填空成功推導出終極三角形公式：<br>
+          <b>三角形面積 ＝ 平行四邊形面積 ÷ 2 ＝ 底 × 高 ÷ 2</b>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 幾何常數（全為 30px 的倍數）
+  const R_BASE_START = 240, R_BASE_END = 480, R_TOP_X = 240, R_TOP_Y = 60, R_BOT_Y = 210;
+  const P_BASE_START = 180, P_BASE_END = 420, P_TOP_X = 270, P_TOP_Y = 60, P_BOT_Y = 210;
+
+  let stateR = { cutX: 480, isCut: false, isOverlapped: false, isDragging: false };
+  let stateP = { cutX: 420, isCut: false, isOverlapped: false, isDragging: false };
+
+  // 1. 分頁切換
+  function switchTab(tabName) {
+    document.getElementById('tabRectBtn').classList.toggle('active', tabName === 'rect');
+    document.getElementById('tabParaBtn').classList.toggle('active', tabName === 'para');
+    document.getElementById('tabRect').classList.toggle('active', tabName === 'rect');
+    document.getElementById('tabPara').classList.toggle('active', tabName === 'para');
+  }
+
+  // 2. 步驟燈
+  function updateStepBar(type, stepNum) {
+    const prefix = type === 'rect' ? 'r' : 'p';
+    const activeClass = type === 'rect' ? 'rect-active' : 'para-active';
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById(`step-${prefix}${i}`);
+      if (el) {
+        el.classList.toggle('active', i === stepNum);
+        el.classList.toggle(activeClass, i === stepNum);
+      }
+    }
+  }
+
+  // 3. 更新圖形頂點與切線
+  function updateShapes(type) {
+    if (type === 'rect') {
+      const x = stateR.cutX;
+      const isDiag = (x === R_BASE_END);
+
+      document.getElementById('polyRA').setAttribute('points', `${R_TOP_X},${R_TOP_Y} ${R_BASE_START},${R_BOT_Y} ${x},${R_BOT_Y}`);
+      document.getElementById('polyRB').setAttribute('points', `${R_TOP_X},${R_TOP_Y} ${R_BASE_END},${R_TOP_Y} ${R_BASE_END},${R_BOT_Y} ${x},${R_BOT_Y}`);
+
+      const cutLine = document.getElementById('cutLineR');
+      cutLine.setAttribute('x2', x);
+      document.getElementById('scissorsR').setAttribute('x', (R_TOP_X + x) / 2);
+
+      document.getElementById('pointCircleR').setAttribute('cx', x);
+      document.getElementById('pulseRingR').setAttribute('cx', x);
+      document.getElementById('hitAreaR').setAttribute('cx', x);
+      document.getElementById('badgeR').setAttribute('transform', `translate(${x}, 185)`);
+
+      const sBox = document.getElementById('statusBoxRect');
+      const sText = document.getElementById('statusTextRect');
+      if (isDiag) {
+        sBox.className = 'cut-status-box status-diagonal';
+        sText.innerText = '🟢 目前狀態：這是一條標準對角線！（連接左上頂點與右下頂點）';
+      } else {
+        sBox.className = 'cut-status-box status-not-diagonal';
+        sText.innerText = `🟠 目前狀態：這不是對角線！（切在底邊長度 ${(x - R_BASE_START) / 30} cm 處）`;
+      }
+    } else {
+      const x = stateP.cutX;
+      const isDiag = (x === P_BASE_END);
+
+      document.getElementById('polyPA').setAttribute('points', `${P_TOP_X},${P_TOP_Y} ${P_BASE_START},${P_BOT_Y} ${x},${P_BOT_Y}`);
+      document.getElementById('polyPB').setAttribute('points', `${P_TOP_X},${P_TOP_Y} 510,${P_TOP_Y} ${P_BASE_END},${P_BOT_Y} ${x},${P_BOT_Y}`);
+
+      const cutLine = document.getElementById('cutLineP');
+      cutLine.setAttribute('x2', x);
+      document.getElementById('scissorsP').setAttribute('x', (P_TOP_X + x) / 2);
+
+      document.getElementById('pointCircleP').setAttribute('cx', x);
+      document.getElementById('pulseRingP').setAttribute('cx', x);
+      document.getElementById('hitAreaP').setAttribute('cx', x);
+      document.getElementById('badgeP').setAttribute('transform', `translate(${x}, 185)`);
+
+      const sBox = document.getElementById('statusBoxPara');
+      const sText = document.getElementById('statusTextPara');
+      if (isDiag) {
+        sBox.className = 'cut-status-box status-diagonal';
+        sText.innerText = '🟢 目前狀態：這是一條標準對角線！（連接頂點 D 與頂點 B）';
+      } else {
+        sBox.className = 'cut-status-box status-not-diagonal';
+        sText.innerText = `🟠 目前狀態：這不是對角線！（切在底邊長度 ${(x - P_BASE_START) / 30} cm 處）`;
+      }
+    }
+  }
+
+  // 4. 剪開
+  function triggerCut(type) {
+    const s = type === 'rect' ? stateR : stateP;
+    s.isCut = true;
+
+    if (type === 'rect') {
+      document.getElementById('btnCutR').disabled = true;
+      document.getElementById('btnOverlapR').disabled = false;
+      document.getElementById('cutLineR').style.opacity = 0;
+      document.getElementById('scissorsR').style.opacity = 0;
+      document.getElementById('dragHandleR').style.display = 'none';
+
+      document.getElementById('groupRA').style.transform = 'translate(-10px, 10px)';
+      document.getElementById('groupRB').style.transform = 'translate(10px, -10px)';
+      updateStepBar('rect', 2);
+    } else {
+      document.getElementById('btnCutP').disabled = true;
+      document.getElementById('btnOverlapP').disabled = false;
+      document.getElementById('cutLineP').style.opacity = 0;
+      document.getElementById('scissorsP').style.opacity = 0;
+      document.getElementById('dragHandleP').style.display = 'none';
+
+      document.getElementById('groupPA').style.transform = 'translate(-10px, 10px)';
+      document.getElementById('groupPB').style.transform = 'translate(10px, -10px)';
+      updateStepBar('para', 2);
+    }
+  }
+
+  // 5. 旋轉疊合
+  function triggerOverlap(type) {
+    const s = type === 'rect' ? stateR : stateP;
+    if (!s.isCut) return;
+    s.isOverlapped = true;
+
+    if (type === 'rect') {
+      document.getElementById('btnOverlapR').disabled = true;
+      document.getElementById('groupRA').style.transform = 'translate(0px, 0px)';
+      document.getElementById('groupRB').style.transform = 'rotate(180deg)';
+
+      const tip = document.getElementById('tipTextRect');
+      if (s.cutX === R_BASE_END) {
+        tip.innerHTML = '<b style="color:#2e7d32;">🎉 完美重合！</b> 因為這是一條對角線，兩個直角三角形完全一樣大，所以每個三角形面積是長方形的<b>一半（÷ 2）</b>！';
+      } else {
+        tip.innerHTML = '<b style="color:#c62828;">❌ 發現了嗎？無法重合！</b> 因為切點不在對角頂點上，兩塊大小不同（一塊小、一塊大），所以<b>不能</b>除以 2！';
+      }
+      updateStepBar('rect', 3);
+    } else {
+      document.getElementById('btnOverlapP').disabled = true;
+      document.getElementById('groupPA').style.transform = 'translate(0px, 0px)';
+      document.getElementById('groupPB').style.transform = 'rotate(180deg)';
+
+      const tip = document.getElementById('tipTextPara');
+      if (s.cutX === P_BASE_END) {
+        tip.innerHTML = '<b style="color:#2e7d32;">🎉 完美重合！</b> 沿對角線剪開的兩個斜三角形完全全等，面積剛好是平行四邊形的<b>一半（÷ 2）</b>！';
+      } else {
+        tip.innerHTML = '<b style="color:#c62828;">❌ 發現了嗎？完全錯位無法重合！</b> 非對角線切出來的兩份大小完全不相等，不能直接除以 2！';
+      }
+      updateStepBar('para', 3);
+    }
+  }
+
+  // 6. 重置與快選
+  function resetAll(type) {
+    if (type === 'rect') {
+      stateR.isCut = false;
+      stateR.isOverlapped = false;
+      document.getElementById('btnCutR').disabled = false;
+      document.getElementById('btnOverlapR').disabled = true;
+      document.getElementById('cutLineR').style.opacity = 1;
+      document.getElementById('scissorsR').style.opacity = 1;
+      document.getElementById('dragHandleR').style.display = 'block';
+      document.getElementById('groupRA').style.transform = 'translate(0,0)';
+      document.getElementById('groupRB').style.transform = 'translate(0,0)';
+      document.getElementById('tipTextRect').innerText = '試試看：先把切點移到「底邊中間」剪開並疊合，觀察兩塊會不會一樣大？再移回「對角頂點」看看有何不同！';
+      updateStepBar('rect', 1);
+    } else {
+      stateP.isCut = false;
+      stateP.isOverlapped = false;
+      document.getElementById('btnCutP').disabled = false;
+      document.getElementById('btnOverlapP').disabled = true;
+      document.getElementById('cutLineP').style.opacity = 1;
+      document.getElementById('scissorsP').style.opacity = 1;
+      document.getElementById('dragHandleP').style.display = 'block';
+      document.getElementById('groupPA').style.transform = 'translate(0,0)';
+      document.getElementById('groupPB').style.transform = 'translate(0,0)';
+      document.getElementById('tipTextPara').innerText = '拖曳底邊切點：看看如果不是切到頂點 B，剪出來的兩塊疊合時會不會完全重合？';
+      updateStepBar('para', 1);
+    }
+    updateShapes(type);
+  }
+
+  function snapCut(type, xVal) {
+    resetAll(type);
+    if (type === 'rect') stateR.cutX = xVal;
+    else stateP.cutX = xVal;
+    updateShapes(type);
+  }
+
+  // 7. 拖曳手柄邏輯
+  function initDragHandlers() {
+    function setupDrag(svgId, handleId, type, minX, maxX) {
+      const svg = document.getElementById(svgId);
+      const handle = document.getElementById(handleId);
+
+      function getCoords(e) {
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        return pt.matrixTransform(svg.getScreenCTM().inverse());
+      }
+
+      handle.addEventListener('pointerdown', (e) => {
+        resetAll(type);
+        if (type === 'rect') stateR.isDragging = true;
+        else stateP.isDragging = true;
+        handle.setPointerCapture(e.pointerId);
+        e.preventDefault();
+      });
+
+      handle.addEventListener('pointermove', (e) => {
+        const isD = type === 'rect' ? stateR.isDragging : stateP.isDragging;
+        if (!isD) return;
+        const coords = getCoords(e);
+        let curX = Math.round(coords.x);
+        curX = Math.max(minX, Math.min(maxX, curX));
+        if (type === 'rect') stateR.cutX = curX;
+        else stateP.cutX = curX;
+        updateShapes(type);
+      });
+
+      const stopDrag = (e) => {
+        if (type === 'rect') stateR.isDragging = false;
+        else stateP.isDragging = false;
+        try { handle.releasePointerCapture(e.pointerId); } catch(err){}
+      };
+
+      handle.addEventListener('pointerup', stopDrag);
+      handle.addEventListener('pointercancel', stopDrag);
+    }
+
+    setupDrag('svgRect', 'dragHandleR', 'rect', 270, 480);
+    setupDrag('svgPara', 'dragHandleP', 'para', 210, 420);
+  }
+
+  // 8. 答題驗證：長方形
+  function checkRectAnswers() {
+    const qNot = document.getElementById('q_test_not_diag_r').value;
+    const qOver = document.getElementById('q_overlap_r').value;
+    const qHalf = document.getElementById('q_half_r').value;
+    const fb = document.getElementById('fbRect');
+    const banner = document.getElementById('bannerRect');
+
+    if (qNot === '不同' && qOver === '重合' && qHalf === '一半') {
+      fb.className = 'feedback-msg feedback-success';
+      fb.innerText = '✅ 太棒了！你完全理解了對角線的重要性！';
+      banner.style.display = 'block';
+      updateStepBar('rect', 4);
+      startCelebration();
+    } else {
+      fb.className = 'feedback-msg feedback-error';
+      fb.innerText = '❌ 再想一想：不是對角線切出來的大小不同；只有對角線能切出重合的一半喔！';
+      banner.style.display = 'none';
+    }
+  }
+
+  // 9. 答題驗證：平行四邊形 (細緻化公式驗證)
+  function checkParaAnswers() {
+    const b = parseInt(document.getElementById('q_base').value, 10);
+    const h = parseInt(document.getElementById('q_height').value, 10);
+    const qSame = document.getElementById('q_same_p').value;
+    const qHalf = document.getElementById('q_half_p').value;
+    
+    // 新增：細緻化公式之選項驗證
+    const fBase = document.getElementById('f_base').value;
+    const fHeight = document.getElementById('f_height').value;
+    const fSign = document.getElementById('f_sign').value;
+    const fNum = parseInt(document.getElementById('f_num').value, 10);
+
+    const fb = document.getElementById('fbPara');
+    const banner = document.getElementById('bannerPara');
+
+    if (
+      b === 8 && h === 5 && 
+      qSame === '相同' && qHalf === '一半' && 
+      fBase === '底' && fHeight === '高' && fSign === '÷' && fNum === 2
+    ) {
+      fb.className = 'feedback-msg feedback-success';
+      fb.innerText = '✅ 完全正確！你已經非常熟悉三角形公式的推導細節了！';
+      banner.style.display = 'block';
+      updateStepBar('para', 4);
+      startCelebration();
+    } else {
+      fb.className = 'feedback-msg feedback-error';
+      fb.innerText = '❌ 再想一想：檢查填寫的公式各部分（底、高、除號 ÷、數值 2）與前面的數格結果！';
+      banner.style.display = 'none';
+    }
+  }
+
+  // 10. 慶祝五彩紙碎
+  const canvas = document.getElementById("celebrationCanvas");
+  const ctx = canvas.getContext("2d");
+  let confettiActive = false;
+  let confettiArray = [];
+  const colors = ["#ff5252", "#ffeb3b", "#2196f3", "#4caf50", "#e040fb", "#ff9100", "#00e5ff"];
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+
+  class ConfettiPiece {
+    constructor() {
+      this.x = Math.random() * canvas.width;
+      this.y = Math.random() * -100 - 20;
+      this.size = Math.random() * 8 + 6;
+      this.color = colors[Math.floor(Math.random() * colors.length)];
+      this.speedX = Math.random() * 4 - 2;
+      this.speedY = Math.random() * 3 + 4;
+      this.rotation = Math.random() * 360;
+      this.rotationSpeed = Math.random() * 4 - 2;
+    }
+    update() {
+      this.x += this.speedX;
+      this.y += this.speedY;
+      this.rotation += this.rotationSpeed;
+    }
+    draw() {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate((this.rotation * Math.PI) / 180);
+      ctx.fillStyle = this.color;
+      ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+      ctx.restore();
+    }
+  }
+
+  function startCelebration() {
+    if (confettiActive) return;
+    confettiActive = true;
+    confettiArray = [];
+    for (let i = 0; i < 120; i++) confettiArray.push(new ConfettiPiece());
+    animateConfetti();
+    setTimeout(() => {
+      confettiActive = false;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }, 3500);
+  }
+
+  function animateConfetti() {
+    if (!confettiActive) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    confettiArray.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animateConfetti);
+  }
+
+  // 初始化
+  updateShapes('rect');
+  updateShapes('para');
+  document.addEventListener('DOMContentLoaded', initDragHandlers);
+</script>
+</body>
+</html>
