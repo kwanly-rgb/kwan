@@ -215,7 +215,7 @@
           <text x="360" y="262" fill="#d32f2f" font-weight="bold" font-size="15" text-anchor="middle">紅線：三角形的底（長）＝ 8 cm（共 8 格）</text>
         </g>
 
-        <!-- 🔵 藍線：三角形的高 / 長方形的闊 (無重疊排版) -->
+        <!-- 🔵 藍線：三角形的高 / 長方形的闊 -->
         <g>
           <line x1="240" y1="60" x2="240" y2="210" stroke="#1976d2" stroke-width="4.5" />
           <line x1="175" y1="60" x2="175" y2="210" stroke="#1976d2" stroke-width="2" marker-start="url(#arrowBlueR)" marker-end="url(#arrowBlueR)" />
@@ -298,6 +298,7 @@
     </div>
   </div>
 
+
   <!-- ==================== TAB 2: 平行四邊形探究 ==================== -->
   <div id="tabPara" class="tab-content">
     <div class="step-bar">
@@ -339,7 +340,7 @@
           <text id="labelPB" x="400" y="110" font-size="20" font-weight="bold" fill="#004d40" opacity="0.8">B</text>
         </g>
 
-        <!-- 🔵 藍線：內部高輔助線 -->
+        <!-- 🔵 藍線：內部高輔助線（疊合後置於頂層繼續清晰展示） -->
         <g id="heightAuxGroup" style="transition: opacity 0.3s ease;">
           <line x1="270" y1="60" x2="270" y2="210" stroke="#1976d2" stroke-width="3" stroke-dasharray="6,4" />
           <path d="M 270 196 L 284 196 L 284 210" fill="none" stroke="#1976d2" stroke-width="2" />
@@ -407,7 +408,7 @@
       <div class="card">
         <div class="card-title">💡 探究提示與對比</div>
         <p id="tipTextPara" style="margin: 0; font-size: 14px; line-height: 1.6; color: #546e7a;">
-          以<b style="color:#d32f2f;">紅線表示底</b>、<b style="color:#1976d2;">藍線表示高</b>。可以點擊上方按鈕隱藏藍色高輔助線，讓學生先數數看高是多少格！
+          以<b style="color:#d32f2f;">紅線表示底</b>、<b style="color:#1976d2;">藍線表示高</b>。旋轉疊合後，藍色高輔助線會繼續呈現，幫你清楚觀察三角形的高！
         </p>
       </div>
     </div>
@@ -501,6 +502,7 @@
     }
   }
 
+  // 🌟 垂直高輔助線控制：在未剪開時或疊合後均可持續顯示 🌟
   function toggleHeightGuide() {
     stateP.showHeight = !stateP.showHeight;
     applyHeightVisibility();
@@ -512,9 +514,11 @@
     const btn = document.getElementById('btnToggleHeight');
     if (!auxGroup || !btn) return;
 
-    const visible = stateP.showHeight && !stateP.isCut;
+    // 只要開啟設定，在「初始狀態」與「旋轉疊合完成後」均保持顯示；僅在剛剪開微移時暫時淡出
+    const visible = stateP.showHeight && (!stateP.isCut || stateP.isOverlapped);
     auxGroup.style.opacity = visible ? 1 : 0;
-    if (sideDim) sideDim.style.opacity = visible ? 1 : 0;
+    auxGroup.style.pointerEvents = visible ? 'auto' : 'none';
+    if (sideDim) sideDim.style.opacity = stateP.showHeight ? 1 : 0;
 
     if (stateP.showHeight) {
       btn.className = 'btn-toggle-blue';
@@ -593,7 +597,7 @@
       document.getElementById('groupPA').style.transform = 'translate(-10px, 10px)';
       document.getElementById('groupPB').style.transform = 'translate(10px, -10px)';
       updateStepBar('para', 2);
-      applyHeightVisibility();
+      applyHeightVisibility(); // 分離時淡出防錯位
     }
   }
 
@@ -616,8 +620,10 @@
       document.getElementById('groupPB').style.transform = 'rotate(180deg)';
       const tip = document.getElementById('tipTextPara');
       tip.innerHTML = (s.cutX === P_BASE_END)
-        ? '<b style="color:#2e7d32;">🎉 完美重合！</b> 沿對角線剪開的兩個斜三角形完全全等，面積剛好是平行四邊形的<b>一半（÷ 2）</b>！'
+        ? '<b style="color:#2e7d32;">🎉 完美重合！</b> 兩個三角形完全全等。請看輔助線：重疊後的三角形，底依然是<b>紅線（8 cm）</b>，垂直高依然是<b>藍線（5 cm）</b>！'
         : '<b style="color:#c62828;">❌ 發現了嗎？完全錯位無法重合！</b> 非對角線切出來的兩份大小完全不相等，不能直接除以 2！';
+      
+      applyHeightVisibility(); // 🌟 疊合完成後重新展現藍色垂直高輔助線！ 🌟
       updateStepBar('para', 3);
     }
   }
@@ -735,7 +741,6 @@
     }
   }
 
-  // 慶祝五彩紙碎
   const canvas = document.getElementById("celebrationCanvas");
   const ctx = canvas.getContext("2d");
   let confettiActive = false;
