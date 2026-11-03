@@ -80,7 +80,7 @@
   .slider-label { display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; margin-bottom: 6px; }
   input[type="range"] { width: 100%; height: 8px; border-radius: 4px; accent-color: var(--primary); cursor: pointer; }
 
-  /* 學生互動練習區（三大任務卡） */
+  /* 學生互動練習區 */
   .tasks-container { display: flex; flex-direction: column; gap: 16px; }
   .task-card { background: #ffffff; border: 2px solid #cfd8dc; border-radius: 14px; padding: 18px; transition: all 0.3s; }
   .task-card.active { border-color: var(--primary); box-shadow: 0 4px 14px rgba(25, 118, 210, 0.12); }
@@ -89,11 +89,9 @@
   .task-body { font-size: 16px; line-height: 1.8; color: #37474f; }
   .interactive-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
 
-  /* 下拉選單與輸入框樣式（專為平板觸控加大） */
   select, input[type="number"] {
     font-size: 16px; font-weight: bold; padding: 6px 12px; border: 2px solid #90a4ae; border-radius: 8px; background: white; color: #263238; cursor: pointer;
   }
-  select:focus, input[type="number"]:focus { outline: none; border-color: var(--primary); }
   input[type="number"] { width: 75px; text-align: center; }
 
   .check-btn { padding: 6px 14px; font-size: 14px; border-radius: 8px; background: var(--primary); color: white; border: none; cursor: pointer; }
@@ -112,10 +110,10 @@
 <div class="container">
   <header>
     <h1>📐 平行四邊形剪拼長方形互動學習工具</h1>
-    <p class="subtitle">拖曳切點 ➔ 一刀剪開 ➔ 平移拼貼 ➔ 發現面積公式</p>
+    <p class="subtitle">拖曳切點 ➔ 一刀剪開 ➔ 平移拼貼 ➔ 觀察紅底線無縫移至新長方形</p>
   </header>
 
-  <!-- 🎨 更新為統一的紅底藍高顏色提示圖例 🎨 -->
+  <!-- 顏色提示圖例 -->
   <div class="color-legend">
     <div class="legend-badge badge-red">
       <span>🔴</span> 紅色線 ＝ 平行四邊形的底（8 cm）
@@ -129,11 +127,9 @@
   <div class="canvas-wrapper">
     <svg id="svgCanvas" viewBox="0 0 780 370" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <!-- 1 cm 方格 (30px = 1 cm) -->
         <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
           <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#e0e0e0" stroke-width="1.2"/>
         </pattern>
-        <!-- 箭頭標記 -->
         <marker id="arrowRed" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
           <path d="M0,0 L6,3 L0,6 Z" fill="#d32f2f"/>
         </marker>
@@ -149,25 +145,30 @@
       <polygon id="ghostParallelogram" points="150,270 390,270 480,120 240,120" fill="none" stroke="#b0bec5" stroke-width="2" stroke-dasharray="6,4" />
 
       <!-- 圖形塊 B (右側保留部分) -->
-      <polygon id="pieceB" points="300,270 390,270 480,120 300,120" fill="#ffe0b2" stroke="#f57c00" stroke-width="2.5" />
+      <g id="groupB">
+        <polygon id="pieceB" points="300,270 390,270 480,120 300,120" fill="#ffe082" stroke="#f57f17" stroke-width="2.5" />
+        <!-- 🔴 Piece B 上的紅色底段（從 cutX 到 390） -->
+        <line id="baseLineB" x1="300" y1="270" x2="390" y2="270" stroke="#d32f2f" stroke-width="4.5" />
+      </g>
 
       <!-- 圖形塊 A (左側平移部分) -->
       <g id="groupA" transform="translate(0, 0)">
         <polygon id="pieceA" points="150,270 300,270 300,120 240,120" fill="#b3e5fc" stroke="#0288d1" stroke-width="2.5" />
+        <!-- 🔴 Piece A 上的紅色底段（從 150 到 cutX，隨圖形 A 一起向右平移！） -->
+        <line id="baseLineA" x1="150" y1="270" x2="300" y2="270" stroke="#d32f2f" stroke-width="4.5" />
       </g>
 
-      <!-- 🟣 紫色剪切線群組 (避免與底和高混淆) -->
+      <!-- 🟣 紫色剪切線群組 -->
       <g id="cutLineGroup">
         <line id="cutLine" x1="300" y1="270" x2="300" y2="120" stroke="#8e24aa" stroke-width="3" stroke-dasharray="6,4" />
         <path id="rightAngleMark" d="M 312 270 L 312 258 L 300 258" fill="none" stroke="#8e24aa" stroke-width="2" />
         <text id="scissorsIcon" x="300" y="195" font-size="20" text-anchor="middle" dominant-baseline="central">✂️</text>
       </g>
 
-      <!-- 🔴 紅色底邊標註線（底邊） -->
-      <g id="baseDimensionGroup">
-        <line id="baseLine" x1="150" y1="270" x2="390" y2="270" stroke="#d32f2f" stroke-width="4.5" />
-        <line x1="150" y1="295" x2="390" y2="295" stroke="#d32f2f" stroke-width="2" marker-start="url(#arrowRed)" marker-end="url(#arrowRed)" />
-        <text x="270" y="315" fill="#d32f2f" font-weight="bold" font-size="15" text-anchor="middle">紅色底 ＝ 8 cm（數一數：共 8 格）</text>
+      <!-- 🔴 動態移動的紅色底標註群組 (隨平移進度平滑滑動至新長方形底部) -->
+      <g id="baseDimGroup" transform="translate(0, 0)">
+        <line id="baseDimLine" x1="150" y1="295" x2="390" y2="295" stroke="#d32f2f" stroke-width="2" marker-start="url(#arrowRed)" marker-end="url(#arrowRed)" />
+        <text id="baseDimText" x="270" y="315" fill="#d32f2f" font-weight="bold" font-size="15" text-anchor="middle">紅色底 ＝ 8 cm（數一數：共 8 格）</text>
       </g>
 
       <!-- 🔵 藍色垂直高標註線（高） -->
@@ -183,7 +184,7 @@
       <text x="490" y="115" font-size="15" font-weight="bold" fill="#78909c">C</text>
       <text x="230" y="115" font-size="15" font-weight="bold" fill="#78909c">D</text>
 
-      <!-- 🟣 紫色拖曳手柄控制群組 (一致化拖曳反饋) -->
+      <!-- 🟣 紫色拖曳手柄控制群組 -->
       <g id="dragHandleGroup" class="drag-handle-group">
         <g id="handleBadge" transform="translate(300, 245)">
           <rect x="-38" y="-22" width="76" height="20" rx="10" fill="#8e24aa" />
@@ -339,9 +340,9 @@
   const SLANT_PX = SLANT_CM * UNIT;   // 90
 
   const X_A = 150, Y_BOTTOM = 270;
-  const X_B = X_A + BASE_PX, Y_TOP = Y_BOTTOM - HEIGHT_PX;
-  const X_D = X_A + SLANT_PX;
-  const X_C = X_B + SLANT_PX;
+  const X_B = X_A + BASE_PX, Y_TOP = Y_BOTTOM - HEIGHT_PX; // X_B = 390
+  const X_D = X_A + SLANT_PX; // 240
+  const X_C = X_B + SLANT_PX; // 480
 
   let cutX = 300;
   let isCut = false;
@@ -351,7 +352,7 @@
   function updateShapes() {
     cutX = Math.max(X_D, Math.min(X_B, cutX));
 
-    // 左塊 A 與右塊 B 多邊形座標
+    // 多邊形頂點更新
     const ptsA = `${X_A},${Y_BOTTOM} ${cutX},${Y_BOTTOM} ${cutX},${Y_TOP} ${X_D},${Y_TOP}`;
     const elPieceA = document.getElementById('pieceA');
     if (elPieceA) elPieceA.setAttribute('points', ptsA);
@@ -359,6 +360,18 @@
     const ptsB = `${cutX},${Y_BOTTOM} ${X_B},${Y_BOTTOM} ${X_C},${Y_TOP} ${cutX},${Y_TOP}`;
     const elPieceB = document.getElementById('pieceB');
     if (elPieceB) elPieceB.setAttribute('points', ptsB);
+
+    // 🔴 實體紅底邊更新：Piece A 佔據 [150, cutX]，Piece B 佔據 [cutX, 390]
+    const baseLineA = document.getElementById('baseLineA');
+    if (baseLineA) {
+      baseLineA.setAttribute('x1', X_A);
+      baseLineA.setAttribute('x2', cutX);
+    }
+    const baseLineB = document.getElementById('baseLineB');
+    if (baseLineB) {
+      baseLineB.setAttribute('x1', cutX);
+      baseLineB.setAttribute('x2', X_B);
+    }
 
     // 紫色垂直高剪切線
     const cutLine = document.getElementById('cutLine');
@@ -369,7 +382,7 @@
       cutLine.setAttribute('y2', Y_TOP);
     }
 
-    // 拖曳切點手柄位置更新
+    // 拖曳手柄位置更新
     const circle = document.getElementById('cutPointCircle');
     if (circle) circle.setAttribute('cx', cutX);
 
@@ -396,18 +409,38 @@
     const offsetFromD = Math.round((cutX - X_D) / UNIT * 10) / 10;
     const label = document.getElementById('cutPosLabel');
     if (label) {
-      if (cutX === X_D) label.innerText = `頂點 D 垂直投影處（切出直角三角形）`;
+      if (cutX === X_D) label.innerText = `頂點 D 垂直投影處（直角三角形）`;
       else label.innerText = `距頂點投影右側 ${offsetFromD} cm（梯形）`;
     }
 
     applyTranslation();
   }
 
+  // 🔴 核心位移動畫連動 🔴
   function applyTranslation() {
     const shiftX = moveProgress * BASE_PX;
     const groupA = document.getElementById('groupA');
     if (groupA) groupA.setAttribute('transform', `translate(${shiftX}, 0)`);
 
+    // 🌟 紅色標註箭頭與文字群組動態向右滑動至新長方形底部 🌟
+    // 新長方形的底部起點為 cutX，終點為 cutX + 240，故位移量為 (cutX - 150) * moveProgress
+    const dimShiftX = moveProgress * (cutX - X_A);
+    const baseDimGroup = document.getElementById('baseDimGroup');
+    if (baseDimGroup) {
+      baseDimGroup.setAttribute('transform', `translate(${dimShiftX}, 0)`);
+    }
+
+    // 動態切換底部文字
+    const baseDimText = document.getElementById('baseDimText');
+    if (baseDimText) {
+      if (moveProgress >= 0.95) {
+        baseDimText.textContent = "新長方形的長（底）＝ 8 cm（共 8 格）";
+      } else {
+        baseDimText.textContent = "紅色底 ＝ 8 cm（數一數：共 8 格）";
+      }
+    }
+
+    // 剪切線淡出
     const cutGroup = document.getElementById('cutLineGroup');
     if (cutGroup) {
       cutGroup.style.opacity = isCut ? Math.max(0, 1 - moveProgress * 1.5) : 1;
