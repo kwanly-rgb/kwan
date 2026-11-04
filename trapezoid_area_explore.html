@@ -21,13 +21,11 @@
         h1 { margin: 0; font-size: 26px; color: #0f172a; }
         .subtitle { font-size: 15px; color: #475569; margin-top: 4px; margin-bottom: 10px; }
 
-        /* 全螢幕紙碎慶祝畫布 */
         #confettiCanvas {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             pointer-events: none; z-index: 9999;
         }
 
-        /* 頂部四大主分頁導航列 */
         .main-nav {
             display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
             background: #e2e8f0; padding: 6px; border-radius: 14px;
@@ -43,13 +41,11 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.08);
         }
 
-        /* 整體工作區（左側主內容 ＋ 右側常駐電子白板 Number Pad） */
         .workspace-wrapper {
             display: flex; gap: 16px; width: 100%; max-width: 1380px;
             align-items: flex-start; justify-content: center;
         }
 
-        /* 分頁容器 */
         .tab-page { display: none; flex: 1 1 auto; min-width: 0; }
         .tab-page.active { display: block; }
 
@@ -69,7 +65,6 @@
             width: 100%; height: auto; display: block;
         }
 
-        /* 方法切換（方法一 vs 方法二） */
         .mode-switcher {
             display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
         }
@@ -99,9 +94,12 @@
         .step-title { font-weight: bold; font-size: 18px; color: #1d4ed8; margin-bottom: 6px; }
         .step-desc { font-size: 16px; line-height: 1.5; }
 
-        .btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        /* 分拆為 5 步後的引導按鈕排列 */
+        .btn-group-5 {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+        }
         button.nav-btn {
-            padding: 11px 8px; font-size: 15px; font-weight: bold; border: none;
+            padding: 10px 6px; font-size: 15px; font-weight: bold; border: none;
             border-radius: 10px; cursor: pointer; transition: 0.2s; background: #e2e8f0; color: #334155;
         }
         button.nav-btn:hover { filter: brightness(0.95); }
@@ -124,7 +122,6 @@
         .worksheet-title { font-weight: bold; font-size: 16px; color: #b45309; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .q-row { margin-bottom: 9px; font-size: 15px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; line-height: 1.6; }
         
-        /* 支援電子白板點選的數字輸入框 */
         .q-input {
             width: 68px; padding: 5px; border: 2px solid #cbd5e1; border-radius: 8px;
             text-align: center; font-size: 17px; font-weight: bold; background: white;
@@ -141,7 +138,6 @@
         .badge.correct { background: #dcfce7; color: #15803d; }
         .badge.wrong { background: #fee2e2; color: #b91c1c; }
 
-        /* 分頁二：塗色小遊戲專用樣式 */
         .pen-bar {
             display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;
         }
@@ -157,7 +153,6 @@
         .pen-h { background: #f0fdf4; color: #16a34a; border-color: #86efac; }
         .pen-h.active { background: #16a34a; color: white; border-color: #166534; transform: scale(1.05); }
 
-        /* 分頁三：課堂實戰練習（單題顯示＋橫式一行過） */
         .single-quiz-container { width: 100%; }
         .quiz-step-tabs {
             display: flex; justify-content: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap;
@@ -188,9 +183,6 @@
         }
         .action-btn:hover { filter: brightness(0.95); }
 
-        /* ========================================================= */
-        /* 右側電子白板專用 Number Pad 樣式                            */
-        /* ========================================================= */
         .numpad-sidebar {
             width: 240px; flex: 0 0 240px; position: sticky; top: 15px;
             background: #1e293b; color: white; border-radius: 18px; padding: 16px;
@@ -234,14 +226,12 @@
 </head>
 <body>
 
-    <!-- 全螢幕五彩紙碎慶祝畫布 -->
     <canvas id="confettiCanvas"></canvas>
 
     <header>
         <h1>📐 梯形面積公式探索與互動教學系統</h1>
         <div class="subtitle">格線頂點精準對齊 · 紅（上底）藍（下底）綠（高）視覺化學習 · 支援電子白板觸控鍵盤</div>
         
-        <!-- 四大主分頁切換按鈕 -->
         <nav class="main-nav">
             <button class="tab-nav-btn active" onclick="switchTab('tabExplore', this)">
                 📐 1. 面積公式探索
@@ -260,7 +250,7 @@
 
     <div class="workspace-wrapper">
         <!-- ========================================================= -->
-        <!-- 分頁一：面積公式探索（方法一：拼砌法 & 方法二：分割重疊法） -->
+        <!-- 分頁一：面積公式探索（步驟 2 與步驟 3 已分拆為獨立按鈕）    -->
         <!-- ========================================================= -->
         <section id="tabExplore" class="tab-page active">
             <div class="mode-switcher">
@@ -306,11 +296,13 @@
                             <div class="step-desc" id="stepDesc"></div>
                         </div>
                         
-                        <div class="btn-group">
+                        <!-- 步驟引導按鈕群組（動態依模式支援 4 或 5 步） -->
+                        <div class="btn-group-5" id="navBtnGroup">
                             <button id="btnStep1" class="nav-btn active" onclick="goToStep(1)">1. 認識梯形</button>
-                            <button id="btnStep2" class="nav-btn" onclick="goToStep(2)">2. 複製並旋轉</button>
-                            <button id="btnStep3" class="nav-btn" onclick="goToStep(3)">3. 拼合圖形</button>
-                            <button id="btnStep4" class="nav-btn" onclick="goToStep(4)">4. 推導公式</button>
+                            <button id="btnStep2" class="nav-btn" onclick="goToStep(2)">2. 複製梯形</button>
+                            <button id="btnStep3" class="nav-btn" onclick="goToStep(3)">3. 旋轉 180°</button>
+                            <button id="btnStep4" class="nav-btn" onclick="goToStep(4)">4. 拼合圖形</button>
+                            <button id="btnStep5" class="nav-btn" onclick="goToStep(5)" style="grid-column: span 2;">5. 推導公式</button>
                             <button class="nav-btn reset-btn" onclick="resetExplorer()">🔄 重新開始探索</button>
                         </div>
                     </div>
@@ -450,19 +442,16 @@
                     梯形面積公式：<b>( <span style="color:var(--top-color)">上底</span> ＋ <span style="color:var(--bottom-color)">下底</span> ) × <span style="color:var(--height-color)">高</span> ÷ 2</b>
                 </p>
 
-                <!-- 題號切換列（每次只顯示一題） -->
                 <div class="quiz-step-tabs">
                     <button id="pTab1" class="quiz-step-btn active" onclick="showPracticeQuestion(1)">第 1 題：基礎例題</button>
                     <button id="pTab2" class="quiz-step-btn" onclick="showPracticeQuestion(2)">第 2 題：直角梯形</button>
                     <button id="pTab3" class="quiz-step-btn" onclick="showPracticeQuestion(3)">第 3 題：文字應用題</button>
                 </div>
 
-                <!-- 單一題目顯示區 -->
                 <div style="background:#faf5ff; border:2px solid #e9d5ff; border-radius:16px; padding:24px; text-align:center;">
                     <h3 id="pracTitle" style="margin-top:0; font-size:22px; color:#1e40af;"></h3>
                     <p id="pracDesc" style="font-size:20px; line-height:1.6; margin:12px 0;"></p>
 
-                    <!-- 橫式一橫行過 -->
                     <div class="one-line-formula">
                         <span>面積 ＝ (</span>
                         <input type="text" inputmode="none" id="pracTop" data-label="橫式：上底" class="numpad-target" placeholder="上底" style="border-color:var(--top-color); color:var(--top-color);">
@@ -591,13 +580,11 @@
         }
     }
 
-    // 為所有支援 Number Pad 的輸入框綁定點擊與聚焦事件
     document.querySelectorAll('.numpad-target').forEach(inp => {
         inp.addEventListener('focus', () => setActiveInput(inp));
         inp.addEventListener('click', () => setActiveInput(inp));
     });
 
-    // 取得目前可見範圍內的所有數字輸入框
     function getVisibleNumpadTargets() {
         return Array.from(document.querySelectorAll('.numpad-target')).filter(el => el.offsetParent !== null);
     }
@@ -635,13 +622,10 @@
                 activeInputEl.value = curVal === '' ? '0.' : curVal + '.';
             }
         } else {
-            // 限制最多輸入 5 個字元避免超出框線
             if (curVal.length < 5) {
                 activeInputEl.value = curVal + key;
             }
         }
-
-        // 觸發 input 事件以同步更新橫式預覽
         activeInputEl.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
@@ -715,7 +699,6 @@
         document.getElementById(tabId).classList.add('active');
         btnEl.classList.add('active');
 
-        // 塗色遊戲不需輸入數字，隱藏右側鍵盤讓畫布更寬敞；其餘分頁顯示右側數字鍵盤
         const numpadEl = document.getElementById('numpadSidebar');
         numpadEl.style.display = (tabId === 'tabIdentify') ? 'none' : 'flex';
 
@@ -727,7 +710,7 @@
     }
 
     // =========================================================
-    // 分頁一：面積公式探索（方法一 & 方法二）
+    // 分頁一：面積公式探索（方法一已分拆為 5 個獨立步驟）
     // =========================================================
     const canvas = document.getElementById('geoCanvas');
     const ctx = canvas.getContext('2d');
@@ -739,13 +722,37 @@
     let leftOffsetCm = 2;
     let currentShapeType = 'isometric';
 
-    let currentMode = 'combine';
+    let currentMode = 'combine'; // 'combine' | 'split'
     let currentStep = 1;
 
-    let animProgress = 0;
-    let joinProgress = 0;
-    let overlapProgress = 0;
+    // 動畫參數：分拆為獨立的複製出現率、旋轉角度、拼合與重疊進度
+    let cloneOpacity = 0;   // 第2個梯形出現進度 (0: 不存在, 1: 完整出現)
+    let animProgress = 0;   // 旋轉進度 (0: 0度, 1: 180度)
+    let joinProgress = 0;   // 拼合進度 (0: 分開, 1: 合攏為平行四邊形)
+    let overlapProgress = 0;// 重疊進度
     let animFrameId = null;
+
+    function renderStepButtons() {
+        const navGroup = document.getElementById('navBtnGroup');
+        if (currentMode === 'combine') {
+            navGroup.innerHTML = `
+                <button id="btnStep1" class="nav-btn ${currentStep===1?'active':''}" onclick="goToStep(1)">1. 認識梯形</button>
+                <button id="btnStep2" class="nav-btn ${currentStep===2?'active':''}" onclick="goToStep(2)">2. 複製梯形</button>
+                <button id="btnStep3" class="nav-btn ${currentStep===3?'active':''}" onclick="goToStep(3)">3. 旋轉 180°</button>
+                <button id="btnStep4" class="nav-btn ${currentStep===4?'active':''}" onclick="goToStep(4)">4. 拼合圖形</button>
+                <button id="btnStep5" class="nav-btn ${currentStep===5?'active':''}" onclick="goToStep(5)" style="grid-column: span 2;">5. 推導公式</button>
+                <button class="nav-btn reset-btn" onclick="resetExplorer()">🔄 重新開始探索</button>
+            `;
+        } else {
+            navGroup.innerHTML = `
+                <button id="btnStep1" class="nav-btn ${currentStep===1?'active':''}" onclick="goToStep(1)">1. 完整平行四邊形</button>
+                <button id="btnStep2" class="nav-btn ${currentStep===2?'active':''}" onclick="goToStep(2)">2. 分割成 A 和 B</button>
+                <button id="btnStep3" class="nav-btn ${currentStep===3?'active':''}" onclick="goToStep(3)">3. 重疊法比較面積</button>
+                <button id="btnStep4" class="nav-btn ${currentStep===4?'active':''}" onclick="goToStep(4)">4. 推導面積公式</button>
+                <button class="nav-btn reset-btn" onclick="resetExplorer()">🔄 重新開始探索</button>
+            `;
+        }
+    }
 
     function switchMode(mode) {
         currentMode = mode;
@@ -755,17 +762,7 @@
         document.getElementById('worksheetCombine').style.display = (mode === 'combine') ? 'block' : 'none';
         document.getElementById('worksheetSplit').style.display = (mode === 'split') ? 'block' : 'none';
 
-        if (mode === 'combine') {
-            document.getElementById('btnStep1').innerText = "1. 認識梯形";
-            document.getElementById('btnStep2').innerText = "2. 複製並旋轉";
-            document.getElementById('btnStep3').innerText = "3. 拼合圖形";
-            document.getElementById('btnStep4').innerText = "4. 推導公式";
-        } else {
-            document.getElementById('btnStep1').innerText = "1. 完整平行四邊形";
-            document.getElementById('btnStep2').innerText = "2. 分割成 A 和 B";
-            document.getElementById('btnStep3').innerText = "3. 重疊法比較面積";
-            document.getElementById('btnStep4').innerText = "4. 推導面積公式";
-        }
+        renderStepButtons();
         goToStep(1);
         setTimeout(autoFocusFirstVisibleInput, 50);
     }
@@ -815,8 +812,10 @@
 
     function goToStep(step, skipAnim = false) {
         currentStep = step;
-        for (let i = 1; i <= 4; i++) {
-            document.getElementById('btnStep' + i).classList.toggle('active', i === step);
+        const totalBtns = (currentMode === 'combine') ? 5 : 4;
+        for (let i = 1; i <= totalBtns; i++) {
+            const btn = document.getElementById('btnStep' + i);
+            if (btn) btn.classList.toggle('active', i === step);
         }
 
         const titleEl = document.getElementById('stepTitle');
@@ -826,37 +825,46 @@
             if (step === 1) {
                 titleEl.innerText = "步驟 1：認識梯形（數格仔）";
                 descEl.innerHTML = `數一數格線：這個梯形有<span style="color:${COLOR_TOP};font-weight:bold;">紅色上底 (${topCm}cm)</span>、<span style="color:${COLOR_BOTTOM};font-weight:bold;">藍色下底 (${bottomCm}cm)</span> 同埋 <span style="color:${COLOR_HEIGHT};font-weight:bold;">綠色高 (${heightCm}cm)</span>。`;
-                if (!skipAnim) animateTo(0, 0, 0); else draw();
+                // clone: 0, rot: 0, join: 0, overlap: 0
+                if (!skipAnim) animateTo(0, 0, 0, 0); else { cloneOpacity = 0; animProgress = 0; joinProgress = 0; draw(); }
             } else if (step === 2) {
-                titleEl.innerText = "步驟 2：複製與旋轉 180°";
-                descEl.innerHTML = `變出第 2 個<b>完全一樣</b>的梯形，並將它<b>旋轉 180 度</b>，使<span style="color:${COLOR_TOP};font-weight:bold;">紅色上底</span>朝下，<span style="color:${COLOR_BOTTOM};font-weight:bold;">藍色下底</span>朝上。`;
-                if (!skipAnim) animateTo(1, 0, 0); else draw();
+                titleEl.innerText = "步驟 2：複製梯形（完全相同）";
+                descEl.innerHTML = `在右邊變出第 2 個<b>完全一樣</b>的黃色梯形！留意它的上底(${topCm}cm)同下底(${bottomCm}cm)方向與原圖一模一樣。`;
+                // clone: 1, rot: 0 (未旋轉), join: 0 (分開)
+                if (!skipAnim) animateTo(1, 0, 0, 0); else { cloneOpacity = 1; animProgress = 0; joinProgress = 0; draw(); }
             } else if (step === 3) {
-                titleEl.innerText = "步驟 3：拼成平行四邊形！";
-                descEl.innerHTML = `將兩個梯形對齊拼合。數一數，拼成的大平行四邊形，它的「底」剛好等於<b>（<span style="color:${COLOR_BOTTOM};">藍色下底 ${bottomCm}</span> ＋ <span style="color:${COLOR_TOP};">紅色上底 ${topCm}</span> ＝ ${bottomCm + topCm}cm）</b>！`;
-                if (!skipAnim) animateTo(1, 1, 0); else draw();
+                titleEl.innerText = "步驟 3：原地旋轉 180°";
+                descEl.innerHTML = `將複製出的第 2 個梯形<b>旋轉 180 度</b>！觀察：<span style="color:${COLOR_TOP};font-weight:bold;">紅色上底轉到下方</span>，<span style="color:${COLOR_BOTTOM};font-weight:bold;">藍色下底轉到上方</span>。`;
+                // clone: 1, rot: 1 (已旋轉180度), join: 0 (保持分開)
+                if (!skipAnim) animateTo(1, 1, 0, 0); else { cloneOpacity = 1; animProgress = 1; joinProgress = 0; draw(); }
             } else if (step === 4) {
-                titleEl.innerText = "步驟 4：推導梯形面積公式";
+                titleEl.innerText = "步驟 4：拼合圖形（成平行四邊形）";
+                descEl.innerHTML = `將兩個梯形對齊拼合！數一數，大平行四邊形的底剛好等於<b>（<span style="color:${COLOR_BOTTOM};">藍色下底 ${bottomCm}</span> ＋ <span style="color:${COLOR_TOP};">紅色上底 ${topCm}</span> ＝ ${bottomCm + topCm}cm）</b>！`;
+                // clone: 1, rot: 1, join: 1 (合攏拼合)
+                if (!skipAnim) animateTo(1, 1, 1, 0); else { cloneOpacity = 1; animProgress = 1; joinProgress = 1; draw(); }
+            } else if (step === 5) {
+                titleEl.innerText = "步驟 5：推導梯形面積公式";
                 descEl.innerHTML = `平行四邊形面積 ＝ (<span style="color:${COLOR_TOP};font-weight:bold;">上底</span> ＋ <span style="color:${COLOR_BOTTOM};font-weight:bold;">下底</span>) × <span style="color:${COLOR_HEIGHT};font-weight:bold;">高</span>。<br>因為由 <b>2 個相同梯形</b> 組成，所以 <b>梯形面積 ＝ (<span style="color:${COLOR_TOP};">上底</span> ＋ <span style="color:${COLOR_BOTTOM};">下底</span>) × <span style="color:${COLOR_HEIGHT};">高</span> ÷ 2</b>。`;
-                if (!skipAnim) animateTo(1, 1, 0); else draw();
+                if (!skipAnim) animateTo(1, 1, 1, 0); else { cloneOpacity = 1; animProgress = 1; joinProgress = 1; draw(); }
             }
         } else {
+            // 方法二：分割重疊法
             if (step === 1) {
                 titleEl.innerText = "步驟 1：觀察平行四邊形";
                 descEl.innerHTML = `數一數這個底為 <b>${bottomCm + topCm}cm</b>、高為 <b style="color:${COLOR_HEIGHT};">${heightCm}cm</b> 的平行四邊形。準備沿中間<b>紫色虛線 ✂️</b> 分割成兩個梯形！`;
-                if (!skipAnim) animateTo(1, 1, 0); else draw();
+                if (!skipAnim) animateTo(1, 1, 1, 0); else draw();
             } else if (step === 2) {
                 titleEl.innerText = "步驟 2：分割成梯形 A 和 B";
                 descEl.innerHTML = `成功分割成左邊的<b>「梯形 A」</b>和右邊倒置的<b>「梯形 B」</b>！它們都有<span style="color:${COLOR_TOP};font-weight:bold;">紅色上底 (${topCm}cm)</span>和<span style="color:${COLOR_BOTTOM};font-weight:bold;">藍色下底 (${bottomCm}cm)</span>。`;
-                if (!skipAnim) animateTo(1, 0, 0); else draw();
+                if (!skipAnim) animateTo(1, 1, 0, 0); else draw();
             } else if (step === 3) {
                 titleEl.innerText = "步驟 3：用「重疊法」比較 A 和 B";
                 descEl.innerHTML = `將<b>梯形 B</b> 轉正並移到<b>梯形 A</b> 上方重疊。發現它們<b>完全重疊</b>，證明 A 和 B 的面積<b>相同</b>！`;
-                if (!skipAnim) animateTo(0, 0, 1); else draw();
+                if (!skipAnim) animateTo(1, 0, 0, 1); else draw();
             } else if (step === 4) {
                 titleEl.innerText = "步驟 4：推導梯形面積公式";
                 descEl.innerHTML = `因為 A 和 B 面積相同，<b>1 個梯形面積 ＝ 平行四邊形面積 ÷ 2</b><br>＝ <b>(<span style="color:${COLOR_TOP};">梯形的上底</span> ＋ <span style="color:${COLOR_BOTTOM};">梯形的下底</span>) × <span style="color:${COLOR_HEIGHT};">高</span> ÷ 2</b>！`;
-                if (!skipAnim) animateTo(1, 0, 0); else draw();
+                if (!skipAnim) animateTo(1, 1, 0, 0); else draw();
             }
         }
     }
@@ -869,10 +877,15 @@
         goToStep(1);
     }
 
-    function animateTo(targetRot, targetJoin, targetOverlap) {
+    function animateTo(targetClone, targetRot, targetJoin, targetOverlap) {
         if (animFrameId) cancelAnimationFrame(animFrameId);
         function step() {
             let done = true;
+            if (Math.abs(cloneOpacity - targetClone) > 0.03) {
+                cloneOpacity += (targetClone - cloneOpacity) * 0.16;
+                done = false;
+            } else { cloneOpacity = targetClone; }
+
             if (Math.abs(animProgress - targetRot) > 0.02) {
                 animProgress += (targetRot - animProgress) * 0.14;
                 done = false;
@@ -999,6 +1012,7 @@
         const labelA = (currentMode === 'split') ? "A" : "";
         const labelB = (currentMode === 'split') ? "B" : "";
 
+        // 1. 第一個梯形 (A)
         ctx.save();
         ctx.translate(startX, startY);
         drawTrapezoidShape(false, labelA);
@@ -1022,9 +1036,11 @@
         ctx.fillText(`高 (${heightCm})`, offset + 6, -h / 2 + 5);
         ctx.restore();
 
-        const showSecond = (currentMode === 'combine') ? (currentStep >= 2 || animProgress > 0) : true;
+        // 2. 第二個梯形 (B)（依 cloneOpacity 決定出現與透明度）
+        const showSecond = (currentMode === 'combine') ? (cloneOpacity > 0.01) : true;
         if (showSecond) {
             ctx.save();
+            ctx.globalAlpha = (currentMode === 'combine') ? Math.min(1, cloneOpacity) : 1;
 
             const finalOriginX = startX + offset + wTop + wBottom;
             const finalOriginY = startY - h;
@@ -1033,8 +1049,10 @@
             const localCenterX = wBottom / 2;
             const localCenterY = -h / 2;
 
-            const unrotatedBaseX = (1 - overlapProgress) * (startX + 6 * scale) + overlapProgress * startX;
-            const unrotatedBaseY = (1 - overlapProgress) * (startY - 3 * scale) + overlapProgress * startY;
+            // 未旋轉時（步驟2複製出來的位置）：平移至右側第 (bottom + 4) 格，頂點精準對齊格線
+            const cloneSeparationX = (bottomCm + 3) * scale;
+            const unrotatedBaseX = (1 - overlapProgress) * (startX + cloneSeparationX) + overlapProgress * startX;
+            const unrotatedBaseY = (1 - overlapProgress) * startY + overlapProgress * startY;
 
             const currentCenterX = (1 - animProgress) * (unrotatedBaseX + localCenterX) + animProgress * (finalOriginX + curGapX - localCenterX);
             const currentCenterY = (1 - animProgress) * (unrotatedBaseY + localCenterY) + animProgress * (finalOriginY + h + localCenterY);
@@ -1046,6 +1064,21 @@
             drawTrapezoidShape(true, labelB);
             ctx.restore();
 
+            // 若在方法一 步驟 2（剛複製出來，未旋轉）：在第2個梯形上方加上提示標籤
+            if (currentMode === 'combine' && currentStep === 2 && cloneOpacity > 0.9) {
+                ctx.save();
+                ctx.font = "bold 15px 'Microsoft JhengHei'";
+                const cloneOriginX = startX + cloneSeparationX;
+                ctx.fillStyle = COLOR_TOP;
+                ctx.fillText(`上底 (${topCm})`, cloneOriginX + offset + wTop / 2 - 28, startY - h - 10);
+                ctx.fillStyle = COLOR_BOTTOM;
+                ctx.fillText(`下底 (${bottomCm})`, cloneOriginX + wBottom / 2 - 28, startY + 22);
+                ctx.fillStyle = "#b45309";
+                ctx.fillText("（第 2 個完全相同的梯形）", cloneOriginX + wBottom / 2 - 75, startY + 45);
+                ctx.restore();
+            }
+
+            // 若在方法二 步驟 1（準備分割）
             if (currentMode === 'split' && currentStep === 1 && joinProgress > 0.95) {
                 ctx.save();
                 ctx.beginPath();
@@ -1063,6 +1096,7 @@
                 ctx.restore();
             }
 
+            // 若在方法二 步驟 3（重疊法完成）
             if (currentMode === 'split' && currentStep === 3 && overlapProgress > 0.95) {
                 ctx.save();
                 ctx.fillStyle = "#15803d";
@@ -1071,7 +1105,8 @@
                 ctx.restore();
             }
 
-            if (joinProgress > 0.95) {
+            // 拼合完成後（步驟 4、5 或 方法二 步驟 1）
+            if (joinProgress > 0.95 && animProgress > 0.95) {
                 ctx.save();
                 ctx.font = "bold 15px 'Microsoft JhengHei'";
                 ctx.fillStyle = COLOR_TOP;
@@ -1455,7 +1490,6 @@
     function generateRandomQuestion() {
         const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
         
-        // 迴圈確保 (上底 + 下底) × 高 必定為偶數，使面積 100% 為整數！
         do {
             randQ.top = randInt(2, 7);
             randQ.bot = randInt(randQ.top + 2, 11);
@@ -1594,7 +1628,8 @@
         }
     }
 
-    // 初始化所有模組
+    // 初始化
+    renderStepButtons();
     updateDimensions();
     initIdentifyShapes();
     showPracticeQuestion(1);
