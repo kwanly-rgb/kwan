@@ -1,594 +1,1605 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>探索梯形面積公式</title>
-<style>
-  :root {
-    --trap-primary: #ef6c00;
-    --trap-light: #fff3e0;
-    
-    /* 梯形專屬顏色提示：紅線上底、藍線下底、綠線高 */
-    --cue-red: #d32f2f;
-    --cue-red-light: #ffebee;
-    --cue-blue: #1976d2;
-    --cue-blue-light: #e3f2fd;
-    --cue-green: #2e7d32;
-    --cue-green-light: #e8f5e9;
-    --cut-purple: #8e24aa;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>梯形面積公式探索與互動練習工具</title>
+    <style>
+        :root {
+            --top-color: #dc2626;    /* 上底：紅色 */
+            --bottom-color: #2563eb; /* 下底：藍色 */
+            --height-color: #16a34a; /* 高：綠色 */
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+        }
+        * { box-sizing: border-box; font-family: "Microsoft JhengHei", "Heiti TC", sans-serif; }
+        body {
+            margin: 0; padding: 12px; background-color: var(--bg-color);
+            color: #1e293b; display: flex; flex-direction: column; align-items: center;
+        }
+        header { text-align: center; margin-bottom: 12px; width: 100%; max-width: 1380px; }
+        h1 { margin: 0; font-size: 26px; color: #0f172a; }
+        .subtitle { font-size: 15px; color: #475569; margin-top: 4px; margin-bottom: 10px; }
 
-    --text-main: #263238;
-    --success: #2e7d32;
-    --error: #c62828;
-  }
+        /* 全螢幕紙碎慶祝畫布 */
+        #confettiCanvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 9999;
+        }
 
-  * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif; }
-  body { margin: 0; padding: 16px; background: #fff8e1; color: var(--text-main); position: relative; }
-  .container { max-width: 960px; margin: 0 auto; background: #ffffff; border-radius: 16px; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); position: relative; z-index: 2; }
-  
-  header { text-align: center; margin-bottom: 18px; }
-  header h1 { margin: 0 0 6px 0; font-size: 28px; }
-  header h1 a { color: var(--trap-primary); text-decoration: none; border-bottom: 2px transparent solid; transition: border-color 0.2s; }
-  header h1 a:hover { border-bottom-color: var(--trap-primary); }
-  p.subtitle { margin: 0; font-size: 15px; color: #bf360c; font-weight: bold; }
+        /* 頂部四大主分頁導航列 */
+        .main-nav {
+            display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;
+            background: #e2e8f0; padding: 6px; border-radius: 14px;
+        }
+        .tab-nav-btn {
+            padding: 10px 18px; font-size: 16px; font-weight: bold; border: none;
+            border-radius: 10px; background: transparent; color: #475569;
+            cursor: pointer; transition: 0.2s;
+        }
+        .tab-nav-btn:hover { background: rgba(255,255,255,0.6); color: #0f172a; }
+        .tab-nav-btn.active {
+            background: #ffffff; color: #1d4ed8;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
 
-  /* 慶祝動畫專用畫布 */
-  #celebrationCanvas {
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; display: block;
-  }
+        /* 整體工作區（左側主內容 ＋ 右側常駐電子白板 Number Pad） */
+        .workspace-wrapper {
+            display: flex; gap: 16px; width: 100%; max-width: 1380px;
+            align-items: flex-start; justify-content: center;
+        }
 
-  /* 梯形雙方法切換按鈕 */
-  .method-switcher {
-    display: flex; gap: 12px; margin-bottom: 16px; background: #fff3e0; padding: 10px; border-radius: 12px; border: 2px solid #ffe082;
-  }
-  .method-btn {
-    flex: 1; padding: 12px 14px; font-size: 16px; font-weight: bold; border-radius: 8px; border: 2px solid transparent; cursor: pointer; background: #ffffff; color: #5d4037; transition: all 0.2s;
-  }
-  .method-btn.active {
-    background: var(--trap-primary); color: #ffffff; border-color: #bf360c; box-shadow: 0 2px 8px rgba(239, 108, 0, 0.25);
-  }
+        /* 分頁容器 */
+        .tab-page { display: none; flex: 1 1 auto; min-width: 0; }
+        .tab-page.active { display: block; }
 
-  /* 步驟引導條 */
-  .step-bar { display: flex; justify-content: space-between; margin-bottom: 16px; background: #f1f5f9; border-radius: 12px; padding: 8px 16px; gap: 8px; }
-  .step-item { flex: 1; text-align: center; font-size: 13px; font-weight: bold; padding: 6px 4px; border-radius: 8px; color: #94a3b8; background: transparent; }
-  .step-item.active { background: #ffffff; color: var(--trap-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .main-container {
+            display: flex; flex-wrap: wrap; gap: 16px; width: 100%;
+            justify-content: center; align-items: flex-start;
+        }
+        .left-panel { flex: 1 1 560px; display: flex; flex-direction: column; gap: 15px; }
+        .right-panel { flex: 1 1 380px; display: flex; flex-direction: column; gap: 15px; }
 
-  /* 顏色圖例 */
-  .color-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-bottom: 16px; }
-  .legend-badge { padding: 6px 14px; border-radius: 30px; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
-  .badge-red { background: var(--cue-red-light); color: var(--cue-red); border: 2px solid var(--cue-red); }
-  .badge-blue { background: var(--cue-blue-light); color: var(--cue-blue); border: 2px solid var(--cue-blue); }
-  .badge-green { background: var(--cue-green-light); color: var(--cue-green); border: 2px solid var(--cue-green); }
+        .card {
+            background: var(--card-bg); border-radius: 16px; padding: 18px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        canvas.geo-board {
+            background: #ffffff; border-radius: 8px; border: 2px solid #94a3b8;
+            width: 100%; height: auto; display: block;
+        }
 
-  /* 主畫布區 */
-  .canvas-wrapper { position: relative; width: 100%; background: #ffffff; border: 2px solid #cfd8dc; border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
-  svg { display: block; width: 100%; height: auto; user-select: none; }
+        /* 方法切換（方法一 vs 方法二） */
+        .mode-switcher {
+            display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
+        }
+        .mode-btn {
+            padding: 10px 18px; font-size: 16px; font-weight: bold; border: 2px solid #cbd5e1;
+            border-radius: 10px; background: white; color: #334155; cursor: pointer; transition: 0.2s;
+        }
+        .mode-btn.active {
+            background: #1e40af; color: white; border-color: #1e40af;
+        }
 
-  /* 控制盤 */
-  .control-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-  .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
-  .card-title { font-weight: bold; font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; color: #37474f; }
+        .shape-selector {
+            display: flex; gap: 10px; margin-bottom: 10px; justify-content: center; flex-wrap: wrap;
+        }
+        .shape-btn {
+            padding: 7px 14px; font-size: 15px; border: 2px solid #cbd5e1;
+            background: white; border-radius: 8px; cursor: pointer; font-weight: bold;
+        }
+        .shape-btn.active {
+            border-color: #2563eb; background: #eff6ff; color: #2563eb;
+        }
 
-  .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
-  button {
-    font-size: 15px; font-weight: bold; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  }
-  .btn-cut { background: var(--cut-purple); color: white; }
-  .btn-cut:hover { background: #6a1b9a; }
-  .btn-overlap { background: #0288d1; color: white; }
-  .btn-overlap:hover { background: #01579b; }
-  .btn-secondary { background: #eceff1; color: #37474f; border: 1px solid #cfd8dc; }
-  .btn-secondary:hover { background: #cfd8dc; }
-  .btn-cut:disabled, .btn-overlap:disabled { opacity: 0.5; cursor: not-allowed; }
+        .step-box {
+            background: #eff6ff; border-left: 6px solid #3b82f6;
+            padding: 14px; border-radius: 8px; margin-bottom: 14px; min-height: 88px;
+        }
+        .step-title { font-weight: bold; font-size: 18px; color: #1d4ed8; margin-bottom: 6px; }
+        .step-desc { font-size: 16px; line-height: 1.5; }
 
-  /* 輔助線專用按鈕 */
-  .btn-toggle-green { background: var(--cue-green-light); color: #1b5e20; border: 2px solid var(--cue-green); }
-  .btn-toggle-green:hover { background: #c8e6c9; }
-  .btn-toggle-hidden { background: #f1f5f9; color: #64748b; border: 2px dashed #94a3b8; }
-  .btn-toggle-hidden:hover { background: #e2e8f0; }
+        .btn-group { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        button.nav-btn {
+            padding: 11px 8px; font-size: 15px; font-weight: bold; border: none;
+            border-radius: 10px; cursor: pointer; transition: 0.2s; background: #e2e8f0; color: #334155;
+        }
+        button.nav-btn:hover { filter: brightness(0.95); }
+        button.nav-btn.active { background: #2563eb; color: white; box-shadow: 0 4px 10px rgba(37,99,235,0.25); }
+        button.reset-btn { grid-column: span 2; background: #fee2e2; color: #b91c1c; }
 
-  /* 學生互動練習區 */
-  .task-card { background: #fff8e1; border: 2px solid #ffe082; border-radius: 14px; padding: 18px; }
-  .task-header { font-size: 17px; font-weight: bold; margin-bottom: 12px; color: #e65100; }
-  .task-body { font-size: 16px; line-height: 1.8; color: #37474f; }
-  .interactive-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0; }
+        .sliders-box {
+            background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;
+            display: flex; flex-direction: column; gap: 8px; margin-top: 12px;
+        }
+        .slider-row { display: flex; align-items: center; justify-content: space-between; font-size: 15px; font-weight: bold; }
+        input[type="range"] { width: 50%; cursor: pointer; }
+        #sliderTop { accent-color: var(--top-color); }
+        #sliderBottom { accent-color: var(--bottom-color); }
+        #sliderHeight { accent-color: var(--height-color); }
 
-  select, input[type="number"] {
-    font-size: 16px; font-weight: bold; padding: 6px 12px; border: 2px solid #90a4ae; border-radius: 8px; background: white; color: #263238; cursor: pointer;
-  }
-  input[type="number"] { width: 70px; text-align: center; }
-  .formula-select { min-width: 80px; text-align: center; }
+        .worksheet-box {
+            background: #fffbeb; border: 2px dashed #fcd34d; border-radius: 12px; padding: 15px;
+        }
+        .worksheet-title { font-weight: bold; font-size: 16px; color: #b45309; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .q-row { margin-bottom: 9px; font-size: 15px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; line-height: 1.6; }
+        
+        /* 支援電子白板點選的數字輸入框 */
+        .q-input {
+            width: 68px; padding: 5px; border: 2px solid #cbd5e1; border-radius: 8px;
+            text-align: center; font-size: 17px; font-weight: bold; background: white;
+            cursor: pointer; transition: 0.15s;
+        }
+        .numpad-target.active-input {
+            border-color: #f59e0b !important;
+            background-color: #fef9c3 !important;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.35);
+            transform: scale(1.05);
+        }
 
-  .check-btn { padding: 6px 14px; font-size: 14px; border-radius: 8px; background: var(--trap-primary); color: white; border: none; cursor: pointer; }
-  .check-btn:hover { background: #bf360c; }
-  .feedback-msg { font-size: 15px; font-weight: bold; margin-left: 8px; }
-  .feedback-success { color: var(--success); }
-  .feedback-error { color: var(--error); }
-  
-  .summary-banner { background: #ffffff; border: 2px dashed #ffb300; border-radius: 12px; padding: 16px; text-align: center; font-size: 18px; font-weight: bold; color: #e65100; margin-top: 12px; }
-</style>
+        .badge { padding: 3px 8px; border-radius: 6px; font-size: 13px; font-weight: bold; margin-left: 4px; }
+        .badge.correct { background: #dcfce7; color: #15803d; }
+        .badge.wrong { background: #fee2e2; color: #b91c1c; }
+
+        /* 分頁二：塗色小遊戲專用樣式 */
+        .pen-bar {
+            display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;
+        }
+        .pen-btn {
+            padding: 12px 22px; font-size: 17px; font-weight: bold; border-radius: 12px;
+            cursor: pointer; border: 3px solid transparent; transition: 0.2s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .pen-top { background: #fef2f2; color: #dc2626; border-color: #fca5a5; }
+        .pen-top.active { background: #dc2626; color: white; border-color: #991b1b; transform: scale(1.05); }
+        .pen-bot { background: #eff6ff; color: #2563eb; border-color: #93c5fd; }
+        .pen-bot.active { background: #2563eb; color: white; border-color: #1e40af; transform: scale(1.05); }
+        .pen-h { background: #f0fdf4; color: #16a34a; border-color: #86efac; }
+        .pen-h.active { background: #16a34a; color: white; border-color: #166534; transform: scale(1.05); }
+
+        /* 分頁三：課堂實戰練習（單題顯示＋橫式一行過） */
+        .single-quiz-container { width: 100%; }
+        .quiz-step-tabs {
+            display: flex; justify-content: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap;
+        }
+        .quiz-step-btn {
+            padding: 10px 22px; font-size: 16px; font-weight: bold; border: 2px solid #d8b4fe;
+            background: white; color: #6b21a8; border-radius: 10px; cursor: pointer; transition: 0.2s;
+        }
+        .quiz-step-btn.active {
+            background: #7e22ce; color: white; border-color: #7e22ce;
+            box-shadow: 0 4px 10px rgba(126,34,206,0.25);
+        }
+        .one-line-formula {
+            display: flex; align-items: center; justify-content: center; flex-wrap: nowrap;
+            gap: 8px; background: #ffffff; padding: 20px 14px; border-radius: 12px;
+            border: 2px solid #e2e8f0; font-size: 22px; font-weight: bold;
+            overflow-x: auto; white-space: nowrap; margin: 18px 0;
+        }
+        .one-line-formula input {
+            width: 74px; height: 48px; font-size: 22px; font-weight: bold;
+            text-align: center; border-radius: 8px; border: 3px solid #cbd5e1;
+            cursor: pointer; transition: 0.15s;
+        }
+
+        .action-btn {
+            padding: 10px 20px; font-size: 16px; font-weight: bold; cursor: pointer;
+            background: #2563eb; color: white; border: none; border-radius: 8px; transition: 0.2s;
+        }
+        .action-btn:hover { filter: brightness(0.95); }
+
+        /* ========================================================= */
+        /* 右側電子白板專用 Number Pad 樣式                            */
+        /* ========================================================= */
+        .numpad-sidebar {
+            width: 240px; flex: 0 0 240px; position: sticky; top: 15px;
+            background: #1e293b; color: white; border-radius: 18px; padding: 16px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .numpad-header {
+            text-align: center; border-bottom: 1px solid #334155; padding-bottom: 8px;
+        }
+        .numpad-title { font-size: 17px; font-weight: bold; color: #f8fafc; }
+        .numpad-status {
+            font-size: 14px; color: #fbbf24; margin-top: 4px; font-weight: bold;
+            background: rgba(255,255,255,0.08); padding: 4px 8px; border-radius: 6px;
+        }
+        .numpad-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+        }
+        .np-btn {
+            height: 54px; font-size: 24px; font-weight: bold; border: none;
+            border-radius: 12px; background: #334155; color: #ffffff;
+            cursor: pointer; transition: 0.1s; box-shadow: 0 3px 0 #0f172a;
+            display: flex; align-items: center; justify-content: center;
+            user-select: none;
+        }
+        .np-btn:active {
+            transform: translateY(3px); box-shadow: none; background: #475569;
+        }
+        .np-btn.np-fn { background: #475569; font-size: 18px; color: #fde047; }
+        .np-btn.np-clear {
+            grid-column: span 1; background: #dc2626; font-size: 17px; color: white;
+        }
+        .np-btn.np-next {
+            grid-column: span 2; background: #2563eb; font-size: 18px; color: white;
+        }
+
+        @media (max-width: 1050px) {
+            .workspace-wrapper { flex-direction: column; align-items: center; }
+            .numpad-sidebar { width: 100%; max-width: 480px; flex: none; position: static; }
+        }
+    </style>
 </head>
 <body>
 
-<canvas id="celebrationCanvas"></canvas>
+    <!-- 全螢幕五彩紙碎慶祝畫布 -->
+    <canvas id="confettiCanvas"></canvas>
 
-<div class="container">
-  <header>
-    <h1>
-      <a href="https://kwanly-rgb.github.io/kwan/trapezoid_area_explore.html" target="_blank" title="開啟 探索梯形面積公式">
-        探索梯形面積公式
-      </a>
-    </h1>
-    <p class="subtitle">頂點完全交會於格線 ➔ 依紅上底、藍下底、綠高提示辨識 ➔ 動手推導梯形面積公式</p>
-  </header>
+    <header>
+        <h1>📐 梯形面積公式探索與互動教學系統</h1>
+        <div class="subtitle">格線頂點精準對齊 · 紅（上底）藍（下底）綠（高）視覺化學習 · 支援電子白板觸控鍵盤</div>
+        
+        <!-- 四大主分頁切換按鈕 -->
+        <nav class="main-nav">
+            <button class="tab-nav-btn active" onclick="switchTab('tabExplore', this)">
+                📐 1. 面積公式探索
+            </button>
+            <button class="tab-nav-btn" onclick="switchTab('tabIdentify', this)">
+                🎨 2. 辨識上底、下底和高（塗色遊戲）
+            </button>
+            <button class="tab-nav-btn" onclick="switchTab('tabPractice', this)">
+                ✍️ 3. 課堂實戰練習
+            </button>
+            <button class="tab-nav-btn" onclick="switchTab('tabRandom', this)">
+                🎲 4. 練習題（隨機出題）
+            </button>
+        </nav>
+    </header>
 
-  <!-- 雙方法切換按鈕 -->
-  <div class="method-switcher">
-    <button id="btnMethod2" class="method-btn active" onclick="switchTrapMethod('m2')">
-      📘 教材方法（橫切高的一半 ➔ 拼成平行四邊形）
-    </button>
-    <button id="btnMethod1" class="method-btn" onclick="switchTrapMethod('m1')">
-      🔍 延伸方法（沿對角線剪開 ➔ 分成 2 個三角形）
-    </button>
-  </div>
+    <div class="workspace-wrapper">
+        <!-- ========================================================= -->
+        <!-- 分頁一：面積公式探索（方法一：拼砌法 & 方法二：分割重疊法） -->
+        <!-- ========================================================= -->
+        <section id="tabExplore" class="tab-page active">
+            <div class="mode-switcher">
+                <button id="modeBtnCombine" class="mode-btn active" onclick="switchMode('combine')">
+                    🧩 方法一：把兩個梯形拼成平行四邊形
+                </button>
+                <button id="modeBtnSplit" class="mode-btn" onclick="switchMode('split')">
+                    ✂️ 方法二：分割平行四邊形與重疊法
+                </button>
+            </div>
 
-  <!-- 梯形專屬顏色提示圖例 -->
-  <div class="color-legend">
-    <div class="legend-badge badge-red">🔴 紅線 ＝ 梯形的上底（4 cm）</div>
-    <div class="legend-badge badge-blue">🔵 藍線 ＝ 梯形的下底（8 cm）</div>
-    <div class="legend-badge badge-green">🟢 綠線 ＝ 梯形的高（4 cm）</div>
-  </div>
+            <div class="main-container">
+                <div class="left-panel">
+                    <div class="card">
+                        <div class="shape-selector">
+                            <button class="shape-btn active" onclick="setTrapezoidType('isometric')">一般／等腰梯形</button>
+                            <button class="shape-btn" onclick="setTrapezoidType('rightAngle')">直角梯形</button>
+                            <button class="shape-btn" onclick="setTrapezoidType('leaning')">鈍角梯形</button>
+                        </div>
+                        <canvas id="geoCanvas" class="geo-board" width="644" height="392"></canvas>
+                        
+                        <div class="sliders-box">
+                            <div class="slider-row">
+                                <span style="color: var(--top-color)">🟥 上底 (a)：<span id="valTop">4</span> cm (格)</span>
+                                <input type="range" id="sliderTop" min="2" max="7" step="1" value="4" oninput="updateDimensions()">
+                            </div>
+                            <div class="slider-row">
+                                <span style="color: var(--bottom-color)">🟦 下底 (b)：<span id="valBottom">8</span> cm (格)</span>
+                                <input type="range" id="sliderBottom" min="5" max="10" step="1" value="8" oninput="updateDimensions()">
+                            </div>
+                            <div class="slider-row">
+                                <span style="color: var(--height-color)">🟩 高 (h)：<span id="valHeight">5</span> cm (格)</span>
+                                <input type="range" id="sliderHeight" min="3" max="7" step="1" value="5" oninput="updateDimensions()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-  <div class="step-bar">
-    <div id="step-t1" class="step-item active">① 觀察梯形上底、下底與高</div>
-    <div id="step-t2" class="step-item">② 一刀剪開梯形</div>
-    <div id="step-t3" class="step-item">③ 旋轉拼貼 / 分離比較</div>
-    <div id="step-t4" class="step-item">④ 歸納梯形面積公式</div>
-  </div>
+                <div class="right-panel">
+                    <div class="card" style="padding-bottom: 15px;">
+                        <div class="step-box">
+                            <div class="step-title" id="stepTitle">步驟 1：認識梯形</div>
+                            <div class="step-desc" id="stepDesc"></div>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button id="btnStep1" class="nav-btn active" onclick="goToStep(1)">1. 認識梯形</button>
+                            <button id="btnStep2" class="nav-btn" onclick="goToStep(2)">2. 複製並旋轉</button>
+                            <button id="btnStep3" class="nav-btn" onclick="goToStep(3)">3. 拼合圖形</button>
+                            <button id="btnStep4" class="nav-btn" onclick="goToStep(4)">4. 推導公式</button>
+                            <button class="nav-btn reset-btn" onclick="resetExplorer()">🔄 重新開始探索</button>
+                        </div>
+                    </div>
 
-  <!-- 梯形 SVG 畫布 -->
-  <div class="canvas-wrapper">
-    <svg id="svgTrap" viewBox="0 0 780 310" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="gridTrap" width="30" height="30" patternUnits="userSpaceOnUse">
-          <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#cbd5e1" stroke-width="1.2"/>
-        </pattern>
-        <marker id="arrowRedT" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-          <path d="M0,0 L6,3 L0,6 Z" fill="#d32f2f"/>
-        </marker>
-        <marker id="arrowBlueT" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-          <path d="M0,0 L6,3 L0,6 Z" fill="#1976d2"/>
-        </marker>
-        <marker id="arrowGreenT" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-          <path d="M0,0 L6,3 L0,6 Z" fill="#2e7d32"/>
-        </marker>
-      </defs>
+                    <!-- 工作紙 A：方法一（拼砌法） -->
+                    <div class="card worksheet-box" id="worksheetCombine">
+                        <div class="worksheet-title">
+                            <span>📝 互動探索工作紙（方法一：拼砌法）</span>
+                            <button class="action-btn" style="padding:5px 12px; font-size:14px; background:#f59e0b;" onclick="checkWorksheetCombine()">核對答案</button>
+                        </div>
+                        <div class="q-row">
+                            i. 梯形的<span style="color:var(--top-color); font-weight:bold;">上底</span>：<input type="text" inputmode="none" id="ansTop" data-label="i. 梯形的上底" class="q-input numpad-target" placeholder="?"> cm
+                            <span id="chkTop" class="badge"></span>
+                        </div>
+                        <div class="q-row">
+                            ii. 梯形的<span style="color:var(--bottom-color); font-weight:bold;">下底</span>：<input type="text" inputmode="none" id="ansBottom" data-label="ii. 梯形的下底" class="q-input numpad-target" placeholder="?"> cm
+                            <span id="chkBottom" class="badge"></span>
+                        </div>
+                        <div class="q-row">
+                            iii. 梯形的<span style="color:var(--height-color); font-weight:bold;">高</span>：<input type="text" inputmode="none" id="ansHeight" data-label="iii. 梯形的高" class="q-input numpad-target" placeholder="?"> cm
+                            <span id="chkHeight" class="badge"></span>
+                        </div>
+                        <hr style="border: 0.5px solid #fcd34d; margin: 8px 0;">
+                        <div class="q-row">
+                            iv. 平行四邊形的底 (<span style="color:var(--top-color);">上底</span>+<span style="color:var(--bottom-color);">下底</span>)：<input type="text" inputmode="none" id="ansParaBase" data-label="iv. 平行四邊形的底" class="q-input numpad-target" placeholder="?"> cm
+                            <span id="chkParaBase" class="badge"></span>
+                        </div>
+                        <div class="q-row">
+                            v. 平行四邊形的<span style="color:var(--height-color); font-weight:bold;">高</span>：<input type="text" inputmode="none" id="ansParaHeight" data-label="v. 平行四邊形的高" class="q-input numpad-target" placeholder="?"> cm
+                            <span id="chkParaHeight" class="badge"></span>
+                        </div>
+                        <div class="q-row">
+                            vi. 梯形面積是平行四邊形面積的：
+                            <select id="ansRatio" class="q-input" style="width:105px;">
+                                <option value="">請選擇</option>
+                                <option value="half">一半 (÷2)</option>
+                                <option value="double">兩倍 (x2)</option>
+                            </select>
+                            <span id="chkRatio" class="badge"></span>
+                        </div>
+                    </div>
 
-      <rect width="100%" height="100%" fill="url(#gridTrap)" />
-      <polygon points="180,180 420,180 360,60 240,60" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6,4" />
+                    <!-- 工作紙 B：方法二（分割與重疊法） -->
+                    <div class="card worksheet-box" id="worksheetSplit" style="display: none;">
+                        <div class="worksheet-title">
+                            <span>📝 互動探索工作紙（方法二：分割重疊）</span>
+                            <button class="action-btn" style="padding:5px 12px; font-size:14px; background:#f59e0b;" onclick="checkWorksheetSplit()">核對答案</button>
+                        </div>
+                        <div class="q-row">
+                            i. 把平行四邊形分割成 <b>2</b> 個大小相同的梯形（<b>A</b> 和 <b>B</b>）。
+                        </div>
+                        <div class="q-row">
+                            ii. 用<b>重疊法</b>比較 A 和 B 的面積，發現它們的面積：
+                            <select id="splitOverlap" class="q-input" style="width:100px;">
+                                <option value="">請選擇</option>
+                                <option value="same">相同</option>
+                                <option value="diff">不相同</option>
+                            </select>
+                            <span id="chkSplitOverlap" class="badge"></span>
+                        </div>
+                        <hr style="border: 0.5px solid #fcd34d; margin: 8px 0;">
+                        <div class="q-row">
+                            iii. 梯形的面積 ＝ 平行四邊形面積 ÷
+                            <input type="text" inputmode="none" id="splitDiv1" data-label="除以多少？" class="q-input numpad-target" style="width:55px;" placeholder="?">
+                            <span id="chkSplitDiv1" class="badge"></span>
+                        </div>
+                        <div class="q-row" style="padding-left: 22px;">
+                            ＝（平行四邊形的底 × <span style="color:var(--height-color);font-weight:bold;">高</span>）÷ 2
+                        </div>
+                        <div class="q-row" style="padding-left: 22px;">
+                            ＝（梯形的
+                            <select id="splitPart1" class="q-input" style="width:80px; color:var(--top-color);">
+                                <option value="">選擇</option>
+                                <option value="top">上底</option>
+                                <option value="height">高</option>
+                            </select>
+                            ＋ 梯形的
+                            <select id="splitPart2" class="q-input" style="width:80px; color:var(--bottom-color);">
+                                <option value="">選擇</option>
+                                <option value="bottom">下底</option>
+                                <option value="height">高</option>
+                            </select>
+                            ）× <span style="color:var(--height-color);font-weight:bold;">高</span> ÷ 2
+                            <span id="chkSplitFormula" class="badge"></span>
+                        </div>
+                        <div class="q-row" style="background:#fef3c7; padding:6px 10px; border-radius:6px; margin-top:4px;">
+                            👉 以目前圖形計算：(<span id="splitShowTop">4</span> + <span id="splitShowBot">8</span>) × <span id="splitShowH">5</span> ÷ 2 ＝
+                            <input type="text" inputmode="none" id="splitCalcAns" data-label="梯形面積答案" class="q-input numpad-target" placeholder="?"> cm²
+                            <span id="chkSplitCalc" class="badge"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-      <!-- 模式 M2 圖層 (橫切高的一半拼成平行四邊形) -->
-      <g id="layerTrapM2">
-        <g id="trapM2Bottom">
-          <polygon points="180,180 420,180 390,120 210,120" fill="#ffe082" stroke="#f57f17" stroke-width="2.5" />
-          <line x1="180" y1="180" x2="420" y2="180" stroke="#1976d2" stroke-width="4.5" />
-        </g>
+        <!-- ========================================================= -->
+        <!-- 分頁二：辨識不同梯形的上底、下底和高（塗色/點擊小遊戲）    -->
+        <!-- ========================================================= -->
+        <section id="tabIdentify" class="tab-page">
+            <div class="card" style="text-align: center;">
+                <h2 style="margin-top:0;">🎨 辨識梯形的上底、下底和高（塗色小遊戲）</h2>
+                <p style="font-size:17px; color:#475569; margin-bottom:15px;">
+                    玩法：先在下方選擇<b>紅色筆</b>、<b>藍色筆</b>或<b>綠色筆</b>，然後點擊圖形中的虛線／邊線，為 4 個不同形狀的梯形塗上正確顏色！
+                </p>
 
-        <g id="trapM2Top" style="transform-origin: 390px 120px; transition: transform 1.1s ease-in-out;">
-          <polygon points="210,120 390,120 360,60 240,60" fill="#b2dfdb" stroke="#00695c" stroke-width="2.5" />
-          <line x1="240" y1="60" x2="360" y2="60" stroke="#d32f2f" stroke-width="4.5" />
-        </g>
+                <div class="pen-bar">
+                    <button id="penBtnTop" class="pen-btn pen-top active" onclick="selectPen('top')">
+                        🖍️ 紅色筆：塗「上底」
+                    </button>
+                    <button id="penBtnBot" class="pen-btn pen-bot" onclick="selectPen('bottom')">
+                        🖍️ 藍色筆：塗「下底」
+                    </button>
+                    <button id="penBtnH" class="pen-btn pen-h" onclick="selectPen('height')">
+                        🖍️ 綠色筆：塗「高」
+                    </button>
+                    <button class="action-btn" style="background:#64748b;" onclick="resetIdentifyGame()">
+                        🔄 重設塗色
+                    </button>
+                    <button class="action-btn" style="background:#16a34a;" onclick="checkIdentifyGame()">
+                        ✓ 核對全部塗色
+                    </button>
+                </div>
 
-        <g id="cutLineTrapM2">
-          <line x1="210" y1="120" x2="390" y2="120" stroke="#8e24aa" stroke-width="3" stroke-dasharray="6,4" />
-          <text x="300" y="120" font-size="22" text-anchor="middle" dominant-baseline="central">✂️</text>
-        </g>
+                <div id="identifyFeedback" style="font-size:18px; font-weight:bold; min-height:28px; margin-bottom:10px;"></div>
 
-        <g id="m2ResultLabels" style="opacity: 0; transition: opacity 0.4s;">
-          <line x1="420" y1="210" x2="540" y2="210" stroke="#d32f2f" stroke-width="2" marker-start="url(#arrowRedT)" marker-end="url(#arrowRedT)" />
-          <text x="480" y="232" fill="#d32f2f" font-weight="bold" font-size="14" text-anchor="middle">紅線上底 ＝ 4 cm</text>
-          <text x="360" y="265" fill="#263238" font-weight="bold" font-size="16" text-anchor="middle">
-            新平行四邊形的底 ＝ <tspan fill="#1976d2">藍色下底 (8 cm)</tspan> ＋ <tspan fill="#d32f2f">紅色上底 (4 cm)</tspan> ＝ 12 cm
-          </text>
-          <line x1="565" y1="120" x2="565" y2="180" stroke="#2e7d32" stroke-width="2.5" marker-start="url(#arrowGreenT)" marker-end="url(#arrowGreenT)" />
-          <rect x="575" y="135" width="155" height="28" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5" />
-          <text x="652" y="154" fill="#1b5e20" font-weight="bold" font-size="13" text-anchor="middle">綠線新高 = 高 ÷ 2 = 2 cm</text>
-        </g>
-      </g>
+                <canvas id="identifyCanvas" class="geo-board" width="980" height="420" style="max-width:980px; margin:0 auto; cursor:pointer;"></canvas>
+            </div>
+        </section>
 
-      <!-- 模式 M1 圖層 (沿對角線剪開分成兩個三角形) -->
-      <g id="layerTrapM1" style="display: none;">
-        <g id="trapM1TriA" style="transition: transform 0.8s ease;">
-          <polygon points="180,180 420,180 240,60" fill="#ffe082" stroke="#f57f17" stroke-width="2.5" />
-          <line x1="180" y1="180" x2="420" y2="180" stroke="#1976d2" stroke-width="4.5" />
-          <text x="265" y="150" font-size="16" font-weight="bold" fill="#0d47a1">三角形 A (藍底)</text>
-        </g>
+        <!-- ========================================================= -->
+        <!-- 分頁三：課堂實戰練習（每次只列出一題＋橫式一橫行過）       -->
+        <!-- ========================================================= -->
+        <section id="tabPractice" class="tab-page">
+            <div class="card single-quiz-container">
+                <h2 style="margin-top:0; text-align:center; color:#6b21a8;">✍️ 課堂實戰練習</h2>
+                <p style="font-size:17px; text-align:center; color:#475569; margin-bottom:18px;">
+                    梯形面積公式：<b>( <span style="color:var(--top-color)">上底</span> ＋ <span style="color:var(--bottom-color)">下底</span> ) × <span style="color:var(--height-color)">高</span> ÷ 2</b>
+                </p>
 
-        <g id="trapM1TriB" style="transition: transform 0.8s ease;">
-          <polygon points="240,60 360,60 420,180" fill="#b2dfdb" stroke="#00695c" stroke-width="2.5" />
-          <line x1="240" y1="60" x2="360" y2="60" stroke="#d32f2f" stroke-width="4.5" />
-          <text x="315" y="100" font-size="16" font-weight="bold" fill="#b71c1c">三角形 B (紅底)</text>
-        </g>
+                <!-- 題號切換列（每次只顯示一題） -->
+                <div class="quiz-step-tabs">
+                    <button id="pTab1" class="quiz-step-btn active" onclick="showPracticeQuestion(1)">第 1 題：基礎例題</button>
+                    <button id="pTab2" class="quiz-step-btn" onclick="showPracticeQuestion(2)">第 2 題：直角梯形</button>
+                    <button id="pTab3" class="quiz-step-btn" onclick="showPracticeQuestion(3)">第 3 題：文字應用題</button>
+                </div>
 
-        <g id="cutLineTrapM1">
-          <line x1="240" y1="60" x2="420" y2="180" stroke="#8e24aa" stroke-width="3" stroke-dasharray="6,4" />
-          <text x="330" y="120" font-size="22" text-anchor="middle" dominant-baseline="central">✂️</text>
-        </g>
-      </g>
+                <!-- 單一題目顯示區 -->
+                <div style="background:#faf5ff; border:2px solid #e9d5ff; border-radius:16px; padding:24px; text-align:center;">
+                    <h3 id="pracTitle" style="margin-top:0; font-size:22px; color:#1e40af;"></h3>
+                    <p id="pracDesc" style="font-size:20px; line-height:1.6; margin:12px 0;"></p>
 
-      <!-- 🟢 綠線：梯形內部高輔助線 -->
-      <g id="trapHeightAuxGroup" style="transition: opacity 0.3s ease;">
-        <line x1="240" y1="60" x2="240" y2="180" stroke="#2e7d32" stroke-width="3" stroke-dasharray="6,4" />
-        <path d="M 240 166 L 254 166 L 254 180" fill="none" stroke="#2e7d32" stroke-width="2" />
-      </g>
+                    <!-- 橫式一橫行過 -->
+                    <div class="one-line-formula">
+                        <span>面積 ＝ (</span>
+                        <input type="text" inputmode="none" id="pracTop" data-label="橫式：上底" class="numpad-target" placeholder="上底" style="border-color:var(--top-color); color:var(--top-color);">
+                        <span>＋</span>
+                        <input type="text" inputmode="none" id="pracBot" data-label="橫式：下底" class="numpad-target" placeholder="下底" style="border-color:var(--bottom-color); color:var(--bottom-color);">
+                        <span>) ×</span>
+                        <input type="text" inputmode="none" id="pracH" data-label="橫式：高" class="numpad-target" placeholder="高" style="border-color:var(--height-color); color:var(--height-color);">
+                        <span>÷ 2 ＝</span>
+                        <input type="text" inputmode="none" id="pracAns" data-label="橫式：面積答案" class="numpad-target" placeholder="答案" style="width:95px; border-color:#7e22ce;">
+                        <span id="pracUnit">cm²</span>
+                    </div>
 
-      <!-- 🟢 綠線：左側外部原高標註 (無重疊排版) -->
-      <g id="trapSideHeightDim">
-        <line x1="150" y1="60" x2="150" y2="180" stroke="#2e7d32" stroke-width="4.5" />
-        <line x1="130" y1="60" x2="130" y2="180" stroke="#2e7d32" stroke-width="2" marker-start="url(#arrowGreenT)" marker-end="url(#arrowGreenT)" />
-        <text x="65" y="115" fill="#2e7d32" font-weight="bold" font-size="15" text-anchor="middle">綠線：高 ＝ 4 cm</text>
-        <text x="65" y="137" fill="#2e7d32" font-size="12" text-anchor="middle">（共 4 格）</text>
-      </g>
+                    <div id="pracFeedback" style="font-size:19px; font-weight:bold; min-height:30px; margin-bottom:14px;"></div>
 
-      <!-- 🔴 紅線：上底常駐尺寸標註 -->
-      <g id="trapTopDim">
-        <line x1="240" y1="35" x2="360" y2="35" stroke="#d32f2f" stroke-width="2" marker-start="url(#arrowRedT)" marker-end="url(#arrowRedT)" />
-        <text x="300" y="23" fill="#d32f2f" font-weight="bold" font-size="14" text-anchor="middle">紅線上底 ＝ 4 cm（4 格）</text>
-      </g>
+                    <div style="display:flex; justify-content:center; gap:14px; flex-wrap:wrap;">
+                        <button class="action-btn" style="background:#64748b;" id="prevPracBtn" onclick="changePracticeStep(-1)">⬅️ 上一題</button>
+                        <button class="action-btn" style="background:#16a34a; padding:12px 28px; font-size:18px;" onclick="checkPracticeCurrent()">✓ 檢查答案</button>
+                        <button class="action-btn" style="background:#2563eb;" id="nextPracBtn" onclick="changePracticeStep(1)">下一題 ➡️</button>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-      <!-- 🔵 藍線：下底常駐尺寸標註 -->
-      <g id="trapBotDim">
-        <line x1="180" y1="210" x2="420" y2="210" stroke="#1976d2" stroke-width="2" marker-start="url(#arrowBlueT)" marker-end="url(#arrowBlueT)" />
-        <text x="300" y="232" fill="#1976d2" font-weight="bold" font-size="14" text-anchor="middle">藍線下底 ＝ 8 cm（8 格）</text>
-      </g>
+        <!-- ========================================================= -->
+        <!-- 分頁四：練習題（隨機出題 - 答案必為整數）                  -->
+        <!-- ========================================================= -->
+        <section id="tabRandom" class="tab-page">
+            <div class="main-container">
+                <div class="left-panel">
+                    <div class="card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <h2 style="margin:0;">🎲 隨機梯形題目畫布</h2>
+                            <span style="background:#dcfce7; color:#15803d; padding:6px 14px; border-radius:20px; font-weight:bold;">
+                                🏆 已答對題數：<span id="randomScore">0</span> 題
+                            </span>
+                        </div>
+                        <canvas id="randomCanvas" class="geo-board" width="588" height="336"></canvas>
+                    </div>
+                </div>
 
-      <circle cx="180" cy="180" r="4" fill="#475569" />
-      <circle cx="420" cy="180" r="4" fill="#475569" />
-      <circle cx="360" cy="60" r="4" fill="#475569" />
-      <circle cx="240" cy="60" r="4" fill="#475569" />
-    </svg>
-  </div>
+                <div class="right-panel">
+                    <div class="card">
+                        <h3 style="margin-top:0; font-size:19px; color:#1e40af;">請數一數左圖格線或根據標示回答：</h3>
+                        
+                        <div style="background:#f8fafc; padding:14px; border-radius:12px; border:1px solid #e2e8f0; font-size:17px; line-height:2.2;">
+                            <div>
+                                1. <span style="color:var(--top-color);font-weight:bold;">上底</span> ＝ <input type="text" inputmode="none" id="randInputTop" data-label="隨機題：上底" class="q-input numpad-target" style="border-color:var(--top-color);"> cm
+                            </div>
+                            <div>
+                                2. <span style="color:var(--bottom-color);font-weight:bold;">下底</span> ＝ <input type="text" inputmode="none" id="randInputBot" data-label="隨機題：下底" class="q-input numpad-target" style="border-color:var(--bottom-color);"> cm
+                            </div>
+                            <div>
+                                3. <span style="color:var(--height-color);font-weight:bold;">高</span> ＝ <input type="text" inputmode="none" id="randInputH" data-label="隨機題：高" class="q-input numpad-target" style="border-color:var(--height-color);"> cm
+                            </div>
+                            <hr style="border:0.5px solid #cbd5e1; margin:10px 0;">
+                            <div style="white-space:nowrap; overflow-x:auto;">
+                                <b>橫式：</b>(<span id="randEchoTop" style="color:var(--top-color);font-weight:bold;">?</span> ＋ <span id="randEchoBot" style="color:var(--bottom-color);font-weight:bold;">?</span>) × <span id="randEchoH" style="color:var(--height-color);font-weight:bold;">?</span> ÷ 2 ＝ <input type="text" inputmode="none" id="randInputArea" data-label="隨機題：面積答案" class="q-input numpad-target" style="width:85px;"> cm²
+                            </div>
+                        </div>
 
-  <!-- 梯形操作面板 -->
-  <div class="control-panel">
-    <div class="card">
-      <div class="card-title">📍 梯形剪拼操作與高輔助線</div>
-      <div style="margin-bottom: 10px;">
-        <button id="btnToggleTrapHeight" class="btn-toggle-green" style="width: 100%;" onclick="toggleTrapHeightGuide()">
-          🟢 綠色高輔助線：顯示中（點擊可隱藏）
-        </button>
-      </div>
-      <div class="btn-group">
-        <button id="btnCutT" class="btn-cut" onclick="triggerTrapCut()">✂️ 一刀剪開</button>
-        <button id="btnActionT" class="btn-overlap" onclick="triggerTrapTransform()" disabled>🔄 旋轉拼成平行四邊形</button>
-        <button class="btn-secondary" onclick="resetTrap()">🔄 重置</button>
-      </div>
+                        <div id="randFeedback" style="margin-top:12px; font-size:17px; font-weight:bold; min-height:28px;"></div>
+
+                        <div style="display:flex; gap:12px; margin-top:12px;">
+                            <button class="action-btn" style="flex:1; background:#16a34a;" onclick="checkRandomQuestion()">
+                                ✓ 核對答案
+                            </button>
+                            <button class="action-btn" style="flex:1; background:#2563eb;" onclick="generateRandomQuestion()">
+                                🎲 下一題（隨機出題）
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================= -->
+        <!-- 右側常駐：電子白板專用觸控數字鍵盤 (Number Pad)            -->
+        <!-- ========================================================= -->
+        <aside id="numpadSidebar" class="numpad-sidebar">
+            <div class="numpad-header">
+                <div class="numpad-title">🔢 電子白板數字鍵盤</div>
+                <div class="numpad-status" id="numpadTargetName">請點選輸入格</div>
+            </div>
+            <div class="numpad-grid">
+                <button type="button" class="np-btn" onclick="pressNumpad('7')">7</button>
+                <button type="button" class="np-btn" onclick="pressNumpad('8')">8</button>
+                <button type="button" class="np-btn" onclick="pressNumpad('9')">9</button>
+
+                <button type="button" class="np-btn" onclick="pressNumpad('4')">4</button>
+                <button type="button" class="np-btn" onclick="pressNumpad('5')">5</button>
+                <button type="button" class="np-btn" onclick="pressNumpad('6')">6</button>
+
+                <button type="button" class="np-btn" onclick="pressNumpad('1')">1</button>
+                <button type="button" class="np-btn" onclick="pressNumpad('2')">2</button>
+                <button type="button" class="np-btn" onclick="pressNumpad('3')">3</button>
+
+                <button type="button" class="np-btn" onclick="pressNumpad('0')">0</button>
+                <button type="button" class="np-btn np-fn" onclick="pressNumpad('.')">.</button>
+                <button type="button" class="np-btn np-fn" onclick="pressNumpad('BACK')">⌫</button>
+
+                <button type="button" class="np-btn np-clear" onclick="pressNumpad('CLEAR')">清除</button>
+                <button type="button" class="np-btn np-next" onclick="pressNumpad('NEXT')">下一格 ➡️</button>
+            </div>
+        </aside>
     </div>
-    <div class="card">
-      <div class="card-title">💡 探究提示與觀察重點</div>
-      <p id="tipTextTrap" style="margin: 0; font-size: 14px; line-height: 1.6; color: #546e7a;">
-        <b>【教材方法】</b>：沿著<b style="color:#2e7d32;">綠線（高）</b>的一半橫切一刀，把上半部旋轉 180° 拼到右邊。看！<b style="color:#d32f2f;">紅線上底（4格）</b>與<b style="color:#1976d2;">藍線下底（8格）</b>接成了多長的底？
-      </p>
-    </div>
-  </div>
-
-  <!-- 梯形互動練習區 -->
-  <div class="task-card">
-    <div class="task-header">✏️ 梯形思考與填空練習</div>
-    <div class="task-body">
-      <div class="interactive-row">
-        <span>1. 數一數方格：這個梯形的<b style="color:#d32f2f;">紅色上底</b>是</span>
-        <input type="number" id="qt_top" placeholder="？">
-        <span>cm，<b style="color:#1976d2;">藍色下底</b>是</span>
-        <input type="number" id="qt_bot" placeholder="？">
-        <span>cm，<b style="color:#2e7d32;">綠色高</b>是</span>
-        <input type="number" id="qt_h" placeholder="？">
-        <span>cm。</span>
-      </div>
-
-      <!-- 方法二專屬引導題 -->
-      <div id="trapQuizM2">
-        <div class="interactive-row">
-          <span>2. <b>【橫切拼貼法】</b>沿高的一半橫切並旋轉後，拼成了一個新的</span>
-          <select id="qt_m2_shape">
-            <option value="">--請選擇--</option>
-            <option value="平行四邊形">平行四邊形</option>
-            <option value="三角形">三角形</option>
-          </select>
-          <span>，它的面積與原來梯形的面積</span>
-          <select id="qt_m2_same">
-            <option value="">--請選擇--</option>
-            <option value="相同">相同</option>
-            <option value="不同">不同</option>
-          </select>
-          <span>。</span>
-        </div>
-        <div class="interactive-row">
-          <span>3. 這個新平行四邊形的<b>底</b> ＝（<span style="color:#d32f2f;">紅線上底</span> ＋ <span style="color:#1976d2;">藍線下底</span>）＝</span>
-          <input type="number" id="qt_m2_newbase" placeholder="？">
-          <span>cm；而它的<b>高</b>只有原來<span style="color:#2e7d32;">綠線高</span>的</span>
-          <select id="qt_m2_halfh">
-            <option value="">--請選擇--</option>
-            <option value="一半">一半（高 ÷ 2 ＝ 2 cm）</option>
-            <option value="兩倍">兩倍（高 × 2 ＝ 8 cm）</option>
-          </select>
-          <span>。</span>
-        </div>
-      </div>
-
-      <!-- 方法一專屬引導題 -->
-      <div id="trapQuizM1" style="display: none;">
-        <div class="interactive-row">
-          <span>2. <b>【對角線分割法】</b>沿對角線剪開後，梯形被分成 2 個高度都是 4 cm（<span style="color:#2e7d32;">綠線</span>）的</span>
-          <select id="qt_m1_shape">
-            <option value="">--請選擇--</option>
-            <option value="三角形">三角形</option>
-            <option value="長方形">長方形</option>
-          </select>
-          <span>。</span>
-        </div>
-        <div class="interactive-row">
-          <span>3. 三角形 A 面積 ＝ <span style="color:#1976d2;">藍線下底</span> × <span style="color:#2e7d32;">綠線高</span> ÷ 2 ＝</span>
-          <input type="number" id="qt_m1_areaA" placeholder="？">
-          <span>cm²；三角形 B 面積 ＝ <span style="color:#d32f2f;">紅線上底</span> × <span style="color:#2e7d32;">綠線高</span> ÷ 2 ＝</span>
-          <input type="number" id="qt_m1_areaB" placeholder="？">
-          <span>cm²；合起來總面積 ＝ <b>24 cm²</b>！</span>
-        </div>
-      </div>
-
-      <!-- 終極梯形公式選填區 -->
-      <div class="interactive-row" style="margin-top: 15px; background: #fff3e0; padding: 12px; border-radius: 8px; border: 1.5px dashed var(--trap-primary);">
-        <span>👉 <b>終極梯形公式歸納：</b> 梯形面積 ＝（</span>
-        <select id="ft_top" class="formula-select" style="color:#d32f2f; border-color:#d32f2f;">
-          <option value="">--</option>
-          <option value="上底">上底 (紅線)</option>
-          <option value="斜邊">斜邊</option>
-        </select>
-        <span>＋</span>
-        <select id="ft_bot" class="formula-select" style="color:#1976d2; border-color:#1976d2;">
-          <option value="">--</option>
-          <option value="下底">下底 (藍線)</option>
-          <option value="高">高</option>
-        </select>
-        <span>）×</span>
-        <select id="ft_h" class="formula-select" style="color:#2e7d32; border-color:#2e7d32;">
-          <option value="">--</option>
-          <option value="高">高 (綠線)</option>
-          <option value="底">底</option>
-        </select>
-        <select id="ft_div" class="formula-select">
-          <option value="">--</option>
-          <option value="÷">÷</option>
-          <option value="－">－</option>
-        </select>
-        <input type="number" id="ft_num" placeholder="？" style="width: 60px;">
-        <button class="check-btn" onclick="checkTrapAnswers()">檢查答案</button>
-        <span id="fbTrap" class="feedback-msg"></span>
-      </div>
-
-      <div id="bannerTrap" class="summary-banner" style="display:none;">
-        🎉 太厲害了！不論是用哪種分割方法，都證明了：<br>
-        <b>梯形面積 ＝ ( <span style="color:#d32f2f;">上底</span> ＋ <span style="color:#1976d2;">下底</span> ) × <span style="color:#2e7d32;">高</span> ÷ 2 ＝ ( 4 ＋ 8 ) × 4 ÷ 2 ＝ 24 cm²</b>
-      </div>
-    </div>
-  </div>
-</div>
 
 <script>
-  let stateT = { method: 'm2', isCut: false, isTransformed: false, showHeight: true };
+    const COLOR_TOP = "#dc2626";
+    const COLOR_BOTTOM = "#2563eb";
+    const COLOR_HEIGHT = "#16a34a";
 
-  function updateStepBar(stepNum) {
-    for (let i = 1; i <= 4; i++) {
-      const el = document.getElementById(`step-t${i}`);
-      if (el) el.classList.toggle('active', i === stepNum);
-    }
-  }
+    // =========================================================
+    // 🔢 電子白板 Number Pad 控制器邏輯
+    // =========================================================
+    let activeInputEl = null;
 
-  function switchTrapMethod(m) {
-    stateT.method = m;
-    document.getElementById('btnMethod2').classList.toggle('active', m === 'm2');
-    document.getElementById('btnMethod1').classList.toggle('active', m === 'm1');
-
-    document.getElementById('layerTrapM2').style.display = (m === 'm2') ? 'block' : 'none';
-    document.getElementById('layerTrapM1').style.display = (m === 'm1') ? 'block' : 'none';
-
-    document.getElementById('trapQuizM2').style.display = (m === 'm2') ? 'block' : 'none';
-    document.getElementById('trapQuizM1').style.display = (m === 'm1') ? 'block' : 'none';
-
-    const btnAct = document.getElementById('btnActionT');
-    btnAct.innerHTML = (m === 'm2') ? '🔄 旋轉拼成平行四邊形' : '↔️ 分離兩個三角形並顯示公式';
-
-    resetTrap();
-  }
-
-  function toggleTrapHeightGuide() {
-    stateT.showHeight = !stateT.showHeight;
-    applyTrapHeightVisibility();
-  }
-
-  function applyTrapHeightVisibility() {
-    const aux = document.getElementById('trapHeightAuxGroup');
-    const side = document.getElementById('trapSideHeightDim');
-    const btn = document.getElementById('btnToggleTrapHeight');
-    if (!aux || !btn) return;
-
-    const visible = stateT.showHeight && !stateT.isTransformed;
-    aux.style.opacity = visible ? 1 : 0;
-    side.style.opacity = stateT.showHeight ? 1 : 0;
-
-    if (stateT.showHeight) {
-      btn.className = 'btn-toggle-green';
-      btn.innerHTML = '🟢 綠色高輔助線：顯示中（點擊可隱藏）';
-    } else {
-      btn.className = 'btn-toggle-hidden';
-      btn.innerHTML = '⚪ 綠色高輔助線：已隱藏（點擊可顯示）';
-    }
-  }
-
-  function triggerTrapCut() {
-    stateT.isCut = true;
-    document.getElementById('btnCutT').disabled = true;
-    document.getElementById('btnActionT').disabled = false;
-
-    if (stateT.method === 'm2') {
-      document.getElementById('cutLineTrapM2').style.opacity = 0;
-      document.getElementById('trapM2Top').style.transform = 'translate(0px, -10px)';
-    } else {
-      document.getElementById('cutLineTrapM1').style.opacity = 0;
-      document.getElementById('trapM1TriA').style.transform = 'translate(-8px, 8px)';
-      document.getElementById('trapM1TriB').style.transform = 'translate(8px, -8px)';
-    }
-    updateStepBar(2);
-  }
-
-  function triggerTrapTransform() {
-    if (!stateT.isCut) return;
-    stateT.isTransformed = true;
-    document.getElementById('btnActionT').disabled = true;
-    const tip = document.getElementById('tipTextTrap');
-
-    if (stateT.method === 'm2') {
-      document.getElementById('trapM2Top').style.transform = 'rotate(180deg)';
-      document.getElementById('m2ResultLabels').style.opacity = 1;
-      document.getElementById('trapTopDim').style.opacity = 0.3;
-      tip.innerHTML = '<b style="color:#e65100;">🎉 拼成平行四邊形了！</b> 它的底是 <b style="color:#1976d2;">藍線下底(8)</b>＋<b style="color:#d32f2f;">紅線上底(4)</b>＝12 cm，高是原來<b style="color:#2e7d32;">綠線高</b>的一半 4÷2＝2 cm！';
-    } else {
-      document.getElementById('trapM1TriA').style.transform = 'translate(-25px, 12px)';
-      document.getElementById('trapM1TriB').style.transform = 'translate(35px, -12px)';
-      tip.innerHTML = '<b style="color:#00695c;">🎉 分成兩個高都是 4 cm（綠線）的三角形！</b><br>三角形 A (<span style="color:#1976d2;">8</span>×<span style="color:#2e7d32;">4</span>÷2＝16) ＋ 三角形 B (<span style="color:#d32f2f;">4</span>×<span style="color:#2e7d32;">4</span>÷2＝8) ＝ 24 cm²！';
-    }
-    applyTrapHeightVisibility();
-    updateStepBar(3);
-  }
-
-  function resetTrap() {
-    stateT.isCut = false;
-    stateT.isTransformed = false;
-    document.getElementById('btnCutT').disabled = false;
-    document.getElementById('btnActionT').disabled = true;
-
-    document.getElementById('cutLineTrapM2').style.opacity = 1;
-    document.getElementById('trapM2Top').style.transform = 'translate(0,0) rotate(0deg)';
-    document.getElementById('m2ResultLabels').style.opacity = 0;
-    document.getElementById('trapTopDim').style.opacity = 1;
-
-    document.getElementById('cutLineTrapM1').style.opacity = 1;
-    document.getElementById('trapM1TriA').style.transform = 'translate(0,0)';
-    document.getElementById('trapM1TriB').style.transform = 'translate(0,0)';
-
-    const tip = document.getElementById('tipTextTrap');
-    if (stateT.method === 'm2') {
-      tip.innerHTML = '<b>【教材方法】</b>：沿著<b style="color:#2e7d32;">綠線（高）</b>的一半橫切一刀，把上半部旋轉 180° 拼到右邊。看！<b style="color:#d32f2f;">紅線上底（4格）</b>與<b style="color:#1976d2;">藍線下底（8格）</b>接成了多長的底？';
-    } else {
-      tip.innerHTML = '<b>【延伸方法】</b>：沿對角線剪開，分成兩個高度相同（<b style="color:#2e7d32;">綠線 4 cm</b>）的三角形。算算看兩個三角形面積加起來是多少？';
-    }
-    applyTrapHeightVisibility();
-    updateStepBar(1);
-  }
-
-  function checkTrapAnswers() {
-    const top = parseInt(document.getElementById('qt_top').value, 10);
-    const bot = parseInt(document.getElementById('qt_bot').value, 10);
-    const h = parseInt(document.getElementById('qt_h').value, 10);
-
-    const ftTop = document.getElementById('ft_top').value;
-    const ftBot = document.getElementById('ft_bot').value;
-    const ftH = document.getElementById('ft_h').value;
-    const ftDiv = document.getElementById('ft_div').value;
-    const ftNum = parseInt(document.getElementById('ft_num').value, 10);
-
-    let methodOk = false;
-    if (stateT.method === 'm2') {
-      const s = document.getElementById('qt_m2_shape').value;
-      const same = document.getElementById('qt_m2_same').value;
-      const nb = parseInt(document.getElementById('qt_m2_newbase').value, 10);
-      const hh = document.getElementById('qt_m2_halfh').value;
-      methodOk = (s === '平行四邊形' && same === '相同' && nb === 12 && hh === '一半');
-    } else {
-      const s = document.getElementById('qt_m1_shape').value;
-      const aA = parseInt(document.getElementById('qt_m1_areaA').value, 10);
-      const aB = parseInt(document.getElementById('qt_m1_areaB').value, 10);
-      methodOk = (s === '三角形' && aA === 16 && aB === 8);
+    function setActiveInput(el) {
+        document.querySelectorAll('.numpad-target').forEach(inp => inp.classList.remove('active-input'));
+        activeInputEl = el;
+        if (el) {
+            el.classList.add('active-input');
+            const label = el.getAttribute('data-label') || '數字輸入格';
+            document.getElementById('numpadTargetName').innerText = `正在輸入：${label}`;
+        } else {
+            document.getElementById('numpadTargetName').innerText = '請點選輸入格';
+        }
     }
 
-    const formulaOk = (ftTop === '上底' && ftBot === '下底' && ftH === '高' && ftDiv === '÷' && ftNum === 2);
-    const fb = document.getElementById('fbTrap');
-    const banner = document.getElementById('bannerTrap');
+    // 為所有支援 Number Pad 的輸入框綁定點擊與聚焦事件
+    document.querySelectorAll('.numpad-target').forEach(inp => {
+        inp.addEventListener('focus', () => setActiveInput(inp));
+        inp.addEventListener('click', () => setActiveInput(inp));
+    });
 
-    if (top === 4 && bot === 8 && h === 4 && methodOk && formulaOk) {
-      fb.className = 'feedback-msg feedback-success';
-      fb.innerText = '✅ 太棒了！你成功推導出梯形面積公式！';
-      banner.style.display = 'block';
-      updateStepBar(4);
-      startCelebration();
-    } else {
-      fb.className = 'feedback-msg feedback-error';
-      fb.innerText = '❌ 請再檢查一下紅線上底(4)、藍線下底(8)、綠線高(4)與公式選填喔！';
-      banner.style.display = 'none';
+    // 取得目前可見範圍內的所有數字輸入框
+    function getVisibleNumpadTargets() {
+        return Array.from(document.querySelectorAll('.numpad-target')).filter(el => el.offsetParent !== null);
     }
-  }
 
-  // 慶祝五彩紙碎
-  const canvas = document.getElementById("celebrationCanvas");
-  const ctx = canvas.getContext("2d");
-  let confettiActive = false;
-  let confettiArray = [];
-  const colors = ["#ff5252", "#ffeb3b", "#2196f3", "#4caf50", "#e040fb", "#ff9100", "#00e5ff"];
-
-  function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
-  window.addEventListener("resize", resizeCanvas);
-  resizeCanvas();
-
-  class ConfettiPiece {
-    constructor() {
-      this.x = Math.random() * canvas.width;
-      this.y = Math.random() * -100 - 20;
-      this.size = Math.random() * 8 + 6;
-      this.color = colors[Math.floor(Math.random() * colors.length)];
-      this.speedX = Math.random() * 4 - 2;
-      this.speedY = Math.random() * 3 + 4;
-      this.rotation = Math.random() * 360;
-      this.rotationSpeed = Math.random() * 4 - 2;
+    function autoFocusFirstVisibleInput() {
+        const visibleInputs = getVisibleNumpadTargets();
+        if (visibleInputs.length > 0) {
+            setActiveInput(visibleInputs[0]);
+        } else {
+            setActiveInput(null);
+        }
     }
-    update() {
-      this.x += this.speedX; this.y += this.speedY; this.rotation += this.rotationSpeed;
+
+    function pressNumpad(key) {
+        if (!activeInputEl || activeInputEl.offsetParent === null) {
+            autoFocusFirstVisibleInput();
+            if (!activeInputEl) return;
+        }
+
+        let curVal = String(activeInputEl.value || '');
+        if (key === 'CLEAR') {
+            activeInputEl.value = '';
+        } else if (key === 'BACK') {
+            activeInputEl.value = curVal.slice(0, -1);
+        } else if (key === 'NEXT') {
+            const visibleInputs = getVisibleNumpadTargets();
+            const idx = visibleInputs.indexOf(activeInputEl);
+            if (idx !== -1 && visibleInputs.length > 1) {
+                const nextEl = visibleInputs[(idx + 1) % visibleInputs.length];
+                setActiveInput(nextEl);
+            }
+            return;
+        } else if (key === '.') {
+            if (!curVal.includes('.')) {
+                activeInputEl.value = curVal === '' ? '0.' : curVal + '.';
+            }
+        } else {
+            // 限制最多輸入 5 個字元避免超出框線
+            if (curVal.length < 5) {
+                activeInputEl.value = curVal + key;
+            }
+        }
+
+        // 觸發 input 事件以同步更新橫式預覽
+        activeInputEl.dispatchEvent(new Event('input', { bubbles: true }));
     }
-    draw() {
-      ctx.save();
-      ctx.translate(this.x, this.y);
-      ctx.rotate((this.rotation * Math.PI) / 180);
-      ctx.fillStyle = this.color;
-      ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
-      ctx.restore();
+
+    // =========================================================
+    // 🎉 五彩紙碎灑落慶祝動畫引擎 (Confetti Engine)
+    // =========================================================
+    const confettiCanvas = document.getElementById('confettiCanvas');
+    const cCtx = confettiCanvas.getContext('2d');
+    let confettiPieces = [];
+    let confettiAnimId = null;
+
+    function resizeConfettiCanvas() {
+        confettiCanvas.width = window.innerWidth;
+        confettiCanvas.height = window.innerHeight;
     }
-  }
+    window.addEventListener('resize', resizeConfettiCanvas);
+    resizeConfettiCanvas();
 
-  function startCelebration() {
-    if (confettiActive) return;
-    confettiActive = true;
-    confettiArray = [];
-    for (let i = 0; i < 120; i++) confettiArray.push(new ConfettiPiece());
-    animateConfetti();
-    setTimeout(() => {
-      confettiActive = false;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }, 3500);
-  }
+    function triggerConfetti() {
+        resizeConfettiCanvas();
+        const colors = ['#dc2626', '#2563eb', '#16a34a', '#f59e0b', '#9333ea', '#ec4899', '#06b6d4'];
+        for (let i = 0; i < 110; i++) {
+            confettiPieces.push({
+                x: Math.random() * confettiCanvas.width,
+                y: -20 - Math.random() * 150,
+                w: 8 + Math.random() * 8,
+                h: 6 + Math.random() * 6,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                vx: (Math.random() - 0.5) * 6,
+                vy: 3 + Math.random() * 4.5,
+                angle: Math.random() * Math.PI * 2,
+                vAngle: (Math.random() - 0.5) * 0.2,
+                opacity: 1
+            });
+        }
+        if (!confettiAnimId) animateConfetti();
+    }
 
-  function animateConfetti() {
-    if (!confettiActive) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    confettiArray.forEach(p => { p.update(); p.draw(); });
-    requestAnimationFrame(animateConfetti);
-  }
+    function animateConfetti() {
+        cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        confettiPieces.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.angle += p.vAngle;
+            if (p.y > confettiCanvas.height * 0.75) {
+                p.opacity -= 0.02;
+            }
+            cCtx.save();
+            cCtx.globalAlpha = Math.max(0, p.opacity);
+            cCtx.translate(p.x, p.y);
+            cCtx.rotate(p.angle);
+            cCtx.fillStyle = p.color;
+            cCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            cCtx.restore();
+        });
+        confettiPieces = confettiPieces.filter(p => p.y < confettiCanvas.height + 30 && p.opacity > 0);
+        if (confettiPieces.length > 0) {
+            confettiAnimId = requestAnimationFrame(animateConfetti);
+        } else {
+            cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+            confettiAnimId = null;
+        }
+    }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    applyTrapHeightVisibility();
-  });
+    // =========================================================
+    // 主分頁切換邏輯
+    // =========================================================
+    function switchTab(tabId, btnEl) {
+        document.querySelectorAll('.tab-page').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.tab-nav-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btnEl.classList.add('active');
+
+        // 塗色遊戲不需輸入數字，隱藏右側鍵盤讓畫布更寬敞；其餘分頁顯示右側數字鍵盤
+        const numpadEl = document.getElementById('numpadSidebar');
+        numpadEl.style.display = (tabId === 'tabIdentify') ? 'none' : 'flex';
+
+        if (tabId === 'tabExplore') draw();
+        if (tabId === 'tabIdentify') drawIdentifyCanvas();
+        if (tabId === 'tabRandom') drawRandomCanvas();
+
+        setTimeout(autoFocusFirstVisibleInput, 50);
+    }
+
+    // =========================================================
+    // 分頁一：面積公式探索（方法一 & 方法二）
+    // =========================================================
+    const canvas = document.getElementById('geoCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const scale = 28;
+    let topCm = 4;
+    let bottomCm = 8;
+    let heightCm = 5;
+    let leftOffsetCm = 2;
+    let currentShapeType = 'isometric';
+
+    let currentMode = 'combine';
+    let currentStep = 1;
+
+    let animProgress = 0;
+    let joinProgress = 0;
+    let overlapProgress = 0;
+    let animFrameId = null;
+
+    function switchMode(mode) {
+        currentMode = mode;
+        document.getElementById('modeBtnCombine').classList.toggle('active', mode === 'combine');
+        document.getElementById('modeBtnSplit').classList.toggle('active', mode === 'split');
+
+        document.getElementById('worksheetCombine').style.display = (mode === 'combine') ? 'block' : 'none';
+        document.getElementById('worksheetSplit').style.display = (mode === 'split') ? 'block' : 'none';
+
+        if (mode === 'combine') {
+            document.getElementById('btnStep1').innerText = "1. 認識梯形";
+            document.getElementById('btnStep2').innerText = "2. 複製並旋轉";
+            document.getElementById('btnStep3').innerText = "3. 拼合圖形";
+            document.getElementById('btnStep4').innerText = "4. 推導公式";
+        } else {
+            document.getElementById('btnStep1').innerText = "1. 完整平行四邊形";
+            document.getElementById('btnStep2').innerText = "2. 分割成 A 和 B";
+            document.getElementById('btnStep3').innerText = "3. 重疊法比較面積";
+            document.getElementById('btnStep4').innerText = "4. 推導面積公式";
+        }
+        goToStep(1);
+        setTimeout(autoFocusFirstVisibleInput, 50);
+    }
+
+    function setTrapezoidType(type) {
+        currentShapeType = type;
+        document.querySelectorAll('.shape-btn').forEach(btn => btn.classList.remove('active'));
+        if (type === 'isometric') {
+            document.querySelector('.shape-btn:nth-child(1)').classList.add('active');
+        } else if (type === 'rightAngle') {
+            document.querySelector('.shape-btn:nth-child(2)').classList.add('active');
+        } else if (type === 'leaning') {
+            document.querySelector('.shape-btn:nth-child(3)').classList.add('active');
+        }
+        updateDimensions();
+    }
+
+    function updateDimensions() {
+        topCm = parseInt(document.getElementById('sliderTop').value);
+        bottomCm = parseInt(document.getElementById('sliderBottom').value);
+        heightCm = parseInt(document.getElementById('sliderHeight').value);
+
+        if (topCm > bottomCm) {
+            topCm = bottomCm;
+            document.getElementById('sliderTop').value = topCm;
+        }
+
+        if (currentShapeType === 'isometric') {
+            leftOffsetCm = Math.max(1, Math.floor((bottomCm - topCm) / 2));
+        } else if (currentShapeType === 'rightAngle') {
+            leftOffsetCm = 0;
+        } else if (currentShapeType === 'leaning') {
+            leftOffsetCm = 3;
+        }
+
+        document.getElementById('valTop').innerText = topCm;
+        document.getElementById('valBottom').innerText = bottomCm;
+        document.getElementById('valHeight').innerText = heightCm;
+
+        document.getElementById('splitShowTop').innerText = topCm;
+        document.getElementById('splitShowBot').innerText = bottomCm;
+        document.getElementById('splitShowH').innerText = heightCm;
+
+        goToStep(currentStep, true);
+        clearWorksheetBadges();
+    }
+
+    function goToStep(step, skipAnim = false) {
+        currentStep = step;
+        for (let i = 1; i <= 4; i++) {
+            document.getElementById('btnStep' + i).classList.toggle('active', i === step);
+        }
+
+        const titleEl = document.getElementById('stepTitle');
+        const descEl = document.getElementById('stepDesc');
+
+        if (currentMode === 'combine') {
+            if (step === 1) {
+                titleEl.innerText = "步驟 1：認識梯形（數格仔）";
+                descEl.innerHTML = `數一數格線：這個梯形有<span style="color:${COLOR_TOP};font-weight:bold;">紅色上底 (${topCm}cm)</span>、<span style="color:${COLOR_BOTTOM};font-weight:bold;">藍色下底 (${bottomCm}cm)</span> 同埋 <span style="color:${COLOR_HEIGHT};font-weight:bold;">綠色高 (${heightCm}cm)</span>。`;
+                if (!skipAnim) animateTo(0, 0, 0); else draw();
+            } else if (step === 2) {
+                titleEl.innerText = "步驟 2：複製與旋轉 180°";
+                descEl.innerHTML = `變出第 2 個<b>完全一樣</b>的梯形，並將它<b>旋轉 180 度</b>，使<span style="color:${COLOR_TOP};font-weight:bold;">紅色上底</span>朝下，<span style="color:${COLOR_BOTTOM};font-weight:bold;">藍色下底</span>朝上。`;
+                if (!skipAnim) animateTo(1, 0, 0); else draw();
+            } else if (step === 3) {
+                titleEl.innerText = "步驟 3：拼成平行四邊形！";
+                descEl.innerHTML = `將兩個梯形對齊拼合。數一數，拼成的大平行四邊形，它的「底」剛好等於<b>（<span style="color:${COLOR_BOTTOM};">藍色下底 ${bottomCm}</span> ＋ <span style="color:${COLOR_TOP};">紅色上底 ${topCm}</span> ＝ ${bottomCm + topCm}cm）</b>！`;
+                if (!skipAnim) animateTo(1, 1, 0); else draw();
+            } else if (step === 4) {
+                titleEl.innerText = "步驟 4：推導梯形面積公式";
+                descEl.innerHTML = `平行四邊形面積 ＝ (<span style="color:${COLOR_TOP};font-weight:bold;">上底</span> ＋ <span style="color:${COLOR_BOTTOM};font-weight:bold;">下底</span>) × <span style="color:${COLOR_HEIGHT};font-weight:bold;">高</span>。<br>因為由 <b>2 個相同梯形</b> 組成，所以 <b>梯形面積 ＝ (<span style="color:${COLOR_TOP};">上底</span> ＋ <span style="color:${COLOR_BOTTOM};">下底</span>) × <span style="color:${COLOR_HEIGHT};">高</span> ÷ 2</b>。`;
+                if (!skipAnim) animateTo(1, 1, 0); else draw();
+            }
+        } else {
+            if (step === 1) {
+                titleEl.innerText = "步驟 1：觀察平行四邊形";
+                descEl.innerHTML = `數一數這個底為 <b>${bottomCm + topCm}cm</b>、高為 <b style="color:${COLOR_HEIGHT};">${heightCm}cm</b> 的平行四邊形。準備沿中間<b>紫色虛線 ✂️</b> 分割成兩個梯形！`;
+                if (!skipAnim) animateTo(1, 1, 0); else draw();
+            } else if (step === 2) {
+                titleEl.innerText = "步驟 2：分割成梯形 A 和 B";
+                descEl.innerHTML = `成功分割成左邊的<b>「梯形 A」</b>和右邊倒置的<b>「梯形 B」</b>！它們都有<span style="color:${COLOR_TOP};font-weight:bold;">紅色上底 (${topCm}cm)</span>和<span style="color:${COLOR_BOTTOM};font-weight:bold;">藍色下底 (${bottomCm}cm)</span>。`;
+                if (!skipAnim) animateTo(1, 0, 0); else draw();
+            } else if (step === 3) {
+                titleEl.innerText = "步驟 3：用「重疊法」比較 A 和 B";
+                descEl.innerHTML = `將<b>梯形 B</b> 轉正並移到<b>梯形 A</b> 上方重疊。發現它們<b>完全重疊</b>，證明 A 和 B 的面積<b>相同</b>！`;
+                if (!skipAnim) animateTo(0, 0, 1); else draw();
+            } else if (step === 4) {
+                titleEl.innerText = "步驟 4：推導梯形面積公式";
+                descEl.innerHTML = `因為 A 和 B 面積相同，<b>1 個梯形面積 ＝ 平行四邊形面積 ÷ 2</b><br>＝ <b>(<span style="color:${COLOR_TOP};">梯形的上底</span> ＋ <span style="color:${COLOR_BOTTOM};">梯形的下底</span>) × <span style="color:${COLOR_HEIGHT};">高</span> ÷ 2</b>！`;
+                if (!skipAnim) animateTo(1, 0, 0); else draw();
+            }
+        }
+    }
+
+    function resetExplorer() {
+        document.getElementById('sliderTop').value = 4;
+        document.getElementById('sliderBottom').value = 8;
+        document.getElementById('sliderHeight').value = 5;
+        setTrapezoidType('isometric');
+        goToStep(1);
+    }
+
+    function animateTo(targetRot, targetJoin, targetOverlap) {
+        if (animFrameId) cancelAnimationFrame(animFrameId);
+        function step() {
+            let done = true;
+            if (Math.abs(animProgress - targetRot) > 0.02) {
+                animProgress += (targetRot - animProgress) * 0.14;
+                done = false;
+            } else { animProgress = targetRot; }
+
+            if (Math.abs(joinProgress - targetJoin) > 0.02) {
+                joinProgress += (targetJoin - joinProgress) * 0.14;
+                done = false;
+            } else { joinProgress = targetJoin; }
+
+            if (Math.abs(overlapProgress - targetOverlap) > 0.02) {
+                overlapProgress += (targetOverlap - overlapProgress) * 0.14;
+                done = false;
+            } else { overlapProgress = targetOverlap; }
+
+            draw();
+            if (!done) animFrameId = requestAnimationFrame(step);
+        }
+        step();
+    }
+
+    function drawTrapezoidShape(isSecond, labelText) {
+        const wBottom = bottomCm * scale;
+        const wTop = topCm * scale;
+        const h = heightCm * scale;
+        const offset = leftOffsetCm * scale;
+
+        const x0 = 0, y0 = 0;
+        const x1 = wBottom, y1 = 0;
+        const x2 = offset + wTop, y2 = -h;
+        const x3 = offset, y3 = -h;
+
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.lineTo(x3, y3);
+        ctx.closePath();
+
+        ctx.fillStyle = isSecond ? "rgba(253, 224, 71, 0.5)" : "rgba(219, 234, 254, 0.65)";
+        ctx.fill();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = "#475569";
+        ctx.stroke();
+
+        // 上底 (紅線)
+        ctx.beginPath();
+        ctx.moveTo(x3, y3);
+        ctx.lineTo(x2, y2);
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = COLOR_TOP;
+        ctx.stroke();
+
+        // 下底 (藍線)
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = COLOR_BOTTOM;
+        ctx.stroke();
+
+        const corners = [
+            { x: x0, y: y0, color: COLOR_BOTTOM },
+            { x: x1, y: y1, color: COLOR_BOTTOM },
+            { x: x2, y: y2, color: COLOR_TOP },
+            { x: x3, y: y3, color: COLOR_TOP }
+        ];
+        corners.forEach(c => {
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, 4.5, 0, Math.PI * 2);
+            ctx.fillStyle = c.color;
+            ctx.fill();
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = "#ffffff";
+            ctx.stroke();
+        });
+
+        if (labelText) {
+            ctx.save();
+            const centerX = (x0 + x1 + x2 + x3) / 4;
+            const centerY = -h / 2;
+            ctx.translate(centerX, centerY);
+            if (isSecond) ctx.rotate(-animProgress * Math.PI);
+            ctx.font = "bold 26px 'Microsoft JhengHei'";
+            ctx.fillStyle = isSecond ? "#b45309" : "#1e40af";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(labelText, 0, 0);
+            ctx.restore();
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.strokeStyle = "#cbd5e1";
+        ctx.lineWidth = 1;
+        for (let x = 0; x <= canvas.width; x += scale) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+        }
+        for (let y = 0; y <= canvas.height; y += scale) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+        }
+
+        ctx.save();
+        ctx.fillStyle = "rgba(148, 163, 184, 0.25)";
+        ctx.fillRect(scale, scale, scale, scale);
+        ctx.strokeStyle = "#64748b";
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(scale, scale, scale, scale);
+        ctx.fillStyle = "#475569";
+        ctx.font = "bold 12px 'Microsoft JhengHei'";
+        ctx.fillText("1cm × 1cm", scale * 2 + 6, scale * 1.65);
+        ctx.restore();
+
+        const wBottom = bottomCm * scale;
+        const wTop = topCm * scale;
+        const h = heightCm * scale;
+        const offset = leftOffsetCm * scale;
+
+        const startX = 2 * scale;
+        const startY = 10 * scale;
+
+        const labelA = (currentMode === 'split') ? "A" : "";
+        const labelB = (currentMode === 'split') ? "B" : "";
+
+        ctx.save();
+        ctx.translate(startX, startY);
+        drawTrapezoidShape(false, labelA);
+
+        ctx.beginPath();
+        ctx.setLineDash([5, 4]);
+        ctx.moveTo(offset, -h);
+        ctx.lineTo(offset, 0);
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = COLOR_HEIGHT;
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.strokeRect(offset, -12, 12, 12);
+
+        ctx.font = "bold 15px 'Microsoft JhengHei'";
+        ctx.fillStyle = COLOR_TOP;
+        ctx.fillText(`上底 (${topCm})`, offset + wTop / 2 - 28, -h - 10);
+        ctx.fillStyle = COLOR_BOTTOM;
+        ctx.fillText(`下底 (${bottomCm})`, wBottom / 2 - 28, 22);
+        ctx.fillStyle = COLOR_HEIGHT;
+        ctx.fillText(`高 (${heightCm})`, offset + 6, -h / 2 + 5);
+        ctx.restore();
+
+        const showSecond = (currentMode === 'combine') ? (currentStep >= 2 || animProgress > 0) : true;
+        if (showSecond) {
+            ctx.save();
+
+            const finalOriginX = startX + offset + wTop + wBottom;
+            const finalOriginY = startY - h;
+            const curGapX = (1 - joinProgress) * (2 * scale);
+
+            const localCenterX = wBottom / 2;
+            const localCenterY = -h / 2;
+
+            const unrotatedBaseX = (1 - overlapProgress) * (startX + 6 * scale) + overlapProgress * startX;
+            const unrotatedBaseY = (1 - overlapProgress) * (startY - 3 * scale) + overlapProgress * startY;
+
+            const currentCenterX = (1 - animProgress) * (unrotatedBaseX + localCenterX) + animProgress * (finalOriginX + curGapX - localCenterX);
+            const currentCenterY = (1 - animProgress) * (unrotatedBaseY + localCenterY) + animProgress * (finalOriginY + h + localCenterY);
+
+            ctx.translate(currentCenterX, currentCenterY);
+            ctx.rotate(animProgress * Math.PI);
+            ctx.translate(-localCenterX, -localCenterY);
+
+            drawTrapezoidShape(true, labelB);
+            ctx.restore();
+
+            if (currentMode === 'split' && currentStep === 1 && joinProgress > 0.95) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.setLineDash([8, 6]);
+                ctx.moveTo(startX + wBottom, startY + 12);
+                ctx.lineTo(startX + offset + wTop, startY - h - 12);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = "#9333ea";
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.font = "bold 17px 'Microsoft JhengHei'";
+                ctx.fillStyle = "#7e22ce";
+                ctx.fillText("✂️ 沿此線分割", startX + offset + wTop - 40, startY - h - 28);
+                ctx.restore();
+            }
+
+            if (currentMode === 'split' && currentStep === 3 && overlapProgress > 0.95) {
+                ctx.save();
+                ctx.fillStyle = "#15803d";
+                ctx.font = "bold 20px 'Microsoft JhengHei'";
+                ctx.fillText("✓ 梯形 A 和 B 完全重疊！面積相同！", startX + wBottom + 28, startY - h / 2);
+                ctx.restore();
+            }
+
+            if (joinProgress > 0.95) {
+                ctx.save();
+                ctx.font = "bold 15px 'Microsoft JhengHei'";
+                ctx.fillStyle = COLOR_TOP;
+                ctx.fillText(`上底 (${topCm})`, startX + wBottom + wTop / 2 - 28, startY + 22);
+                ctx.fillStyle = COLOR_BOTTOM;
+                ctx.fillText(`下底 (${bottomCm})`, startX + offset + wTop + wBottom / 2 - 28, startY - h - 10);
+
+                const totalWidth = wBottom + wTop;
+                const bracketY = startY + 38;
+                ctx.beginPath();
+                ctx.strokeStyle = "#0f172a";
+                ctx.lineWidth = 2;
+                ctx.moveTo(startX, bracketY - 6);
+                ctx.lineTo(startX, bracketY);
+                ctx.lineTo(startX + totalWidth, bracketY);
+                ctx.lineTo(startX + totalWidth, bracketY - 6);
+                ctx.stroke();
+
+                ctx.fillStyle = "#0f172a";
+                ctx.fillText(`平行四邊形底邊 ＝ 下底 ＋ 上底 (${bottomCm} + ${topCm} = ${bottomCm + topCm} cm)`, startX + 10, bracketY + 22);
+                ctx.restore();
+            }
+        }
+    }
+
+    function clearWorksheetBadges() {
+        const badges = [
+            'chkTop', 'chkBottom', 'chkHeight', 'chkParaBase', 'chkParaHeight', 'chkRatio',
+            'chkSplitOverlap', 'chkSplitDiv1', 'chkSplitFormula', 'chkSplitCalc'
+        ];
+        badges.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.innerText = ''; el.className = 'badge'; }
+        });
+    }
+
+    function checkWorksheetCombine() {
+        const c1 = verify(parseInt(document.getElementById('ansTop').value), topCm, 'chkTop');
+        const c2 = verify(parseInt(document.getElementById('ansBottom').value), bottomCm, 'chkBottom');
+        const c3 = verify(parseInt(document.getElementById('ansHeight').value), heightCm, 'chkHeight');
+        const c4 = verify(parseInt(document.getElementById('ansParaBase').value), topCm + bottomCm, 'chkParaBase');
+        const c5 = verify(parseInt(document.getElementById('ansParaHeight').value), heightCm, 'chkParaHeight');
+        const c6 = verify(document.getElementById('ansRatio').value, 'half', 'chkRatio');
+        if (c1 && c2 && c3 && c4 && c5 && c6) triggerConfetti();
+    }
+
+    function checkWorksheetSplit() {
+        const c1 = verify(document.getElementById('splitOverlap').value, 'same', 'chkSplitOverlap');
+        const c2 = verify(parseInt(document.getElementById('splitDiv1').value), 2, 'chkSplitDiv1');
+
+        const p1 = document.getElementById('splitPart1').value;
+        const p2 = document.getElementById('splitPart2').value;
+        const c3 = verify(p1 === 'top' && p2 === 'bottom', true, 'chkSplitFormula');
+
+        const expectedArea = (topCm + bottomCm) * heightCm / 2;
+        const c4 = verify(parseFloat(document.getElementById('splitCalcAns').value), expectedArea, 'chkSplitCalc');
+        if (c1 && c2 && c3 && c4) triggerConfetti();
+    }
+
+    function verify(userVal, correctVal, chkId) {
+        const badge = document.getElementById(chkId);
+        if (userVal === correctVal) {
+            badge.innerText = "✓ 正確";
+            badge.className = "badge correct";
+            return true;
+        } else {
+            badge.innerText = "✗ 再試試";
+            badge.className = "badge wrong";
+            return false;
+        }
+    }
+
+    // =========================================================
+    // 分頁二：辨識上底、下底和高（塗色/點擊小遊戲）
+    // =========================================================
+    const idCanvas = document.getElementById('identifyCanvas');
+    const idCtx = idCanvas.getContext('2d');
+    const idScale = 28;
+    let currentPen = 'top';
+    let idShapes = [];
+
+    function initIdentifyShapes() {
+        idShapes = [
+            {
+                title: "① 等腰梯形",
+                segments: [
+                    { x1: 3, y1: 4, x2: 6, y2: 4, role: 'top', userColor: null },
+                    { x1: 2, y1: 10, x2: 7, y2: 10, role: 'bottom', userColor: null },
+                    { x1: 2, y1: 10, x2: 3, y2: 4, role: 'side', userColor: null },
+                    { x1: 7, y1: 10, x2: 6, y2: 4, role: 'side', userColor: null },
+                    { x1: 4, y1: 4, x2: 4, y2: 10, role: 'height', isDashed: true, rightAngle: 'bottom', userColor: null }
+                ]
+            },
+            {
+                title: "② 直角梯形（左邊垂直）",
+                segments: [
+                    { x1: 10, y1: 4, x2: 13, y2: 4, role: 'top', userColor: null },
+                    { x1: 10, y1: 10, x2: 15, y2: 10, role: 'bottom', userColor: null },
+                    { x1: 10, y1: 4, x2: 10, y2: 10, role: 'height', isDashed: false, rightAngle: 'bottom', userColor: null },
+                    { x1: 13, y1: 4, x2: 15, y2: 10, role: 'side', userColor: null }
+                ]
+            },
+            {
+                title: "③ 倒置梯形（上長下短）",
+                segments: [
+                    { x1: 18, y1: 4, x2: 24, y2: 4, role: 'top', userColor: null },
+                    { x1: 20, y1: 10, x2: 23, y2: 10, role: 'bottom', userColor: null },
+                    { x1: 18, y1: 4, x2: 20, y2: 10, role: 'side', userColor: null },
+                    { x1: 24, y1: 4, x2: 23, y2: 10, role: 'side', userColor: null },
+                    { x1: 21, y1: 4, x2: 21, y2: 10, role: 'height', isDashed: true, rightAngle: 'bottom', userColor: null }
+                ]
+            },
+            {
+                title: "④ 側向梯形（左右平行）",
+                segments: [
+                    { x1: 27, y1: 5, x2: 27, y2: 9, role: 'top', userColor: null },
+                    { x1: 32, y1: 3, x2: 32, y2: 11, role: 'bottom', userColor: null },
+                    { x1: 27, y1: 5, x2: 32, y2: 3, role: 'side', userColor: null },
+                    { x1: 27, y1: 9, x2: 32, y2: 11, role: 'side', userColor: null },
+                    { x1: 27, y1: 7, x2: 32, y2: 7, role: 'height', isDashed: true, rightAngle: 'right', userColor: null }
+                ]
+            }
+        ];
+    }
+
+    function selectPen(penType) {
+        currentPen = penType;
+        document.getElementById('penBtnTop').classList.toggle('active', penType === 'top');
+        document.getElementById('penBtnBot').classList.toggle('active', penType === 'bottom');
+        document.getElementById('penBtnH').classList.toggle('active', penType === 'height');
+    }
+
+    function getPenHex(penType) {
+        if (penType === 'top') return COLOR_TOP;
+        if (penType === 'bottom') return COLOR_BOTTOM;
+        if (penType === 'height') return COLOR_HEIGHT;
+        return "#64748b";
+    }
+
+    function drawIdentifyCanvas() {
+        idCtx.clearRect(0, 0, idCanvas.width, idCanvas.height);
+
+        idCtx.strokeStyle = "#e2e8f0";
+        idCtx.lineWidth = 1;
+        for (let x = 0; x <= idCanvas.width; x += idScale) {
+            idCtx.beginPath(); idCtx.moveTo(x, 0); idCtx.lineTo(x, idCanvas.height); idCtx.stroke();
+        }
+        for (let y = 0; y <= idCanvas.height; y += idScale) {
+            idCtx.beginPath(); idCtx.moveTo(0, y); idCtx.lineTo(idCanvas.width, y); idCtx.stroke();
+        }
+
+        idShapes.forEach(shape => {
+            const firstSeg = shape.segments[0];
+            idCtx.font = "bold 16px 'Microsoft JhengHei'";
+            idCtx.fillStyle = "#0f172a";
+            idCtx.fillText(shape.title, firstSeg.x1 * idScale - 10, 2 * idScale);
+
+            shape.segments.forEach(seg => {
+                const px1 = seg.x1 * idScale;
+                const py1 = seg.y1 * idScale;
+                const px2 = seg.x2 * idScale;
+                const py2 = seg.y2 * idScale;
+
+                idCtx.save();
+                idCtx.beginPath();
+                if (seg.isDashed) idCtx.setLineDash([6, 5]);
+                idCtx.moveTo(px1, py1);
+                idCtx.lineTo(px2, py2);
+
+                if (seg.userColor) {
+                    idCtx.strokeStyle = getPenHex(seg.userColor);
+                    idCtx.lineWidth = 7;
+                } else {
+                    idCtx.strokeStyle = "#64748b";
+                    idCtx.lineWidth = 3.5;
+                }
+                idCtx.lineCap = "round";
+                idCtx.stroke();
+                idCtx.setLineDash([]);
+
+                if (seg.rightAngle === 'bottom') {
+                    idCtx.strokeStyle = seg.userColor ? getPenHex(seg.userColor) : "#64748b";
+                    idCtx.lineWidth = 2;
+                    idCtx.strokeRect(px2, py2 - 12, 12, 12);
+                } else if (seg.rightAngle === 'right') {
+                    idCtx.strokeStyle = seg.userColor ? getPenHex(seg.userColor) : "#64748b";
+                    idCtx.lineWidth = 2;
+                    idCtx.strokeRect(px2 - 12, py2 - 12, 12, 12);
+                }
+
+                [ {x: px1, y: py1}, {x: px2, y: py2} ].forEach(pt => {
+                    idCtx.beginPath();
+                    idCtx.arc(pt.x, pt.y, 4, 0, Math.PI * 2);
+                    idCtx.fillStyle = "#334155";
+                    idCtx.fill();
+                });
+
+                idCtx.restore();
+            });
+        });
+    }
+
+    function distToSegment(px, py, x1, y1, x2, y2) {
+        const l2 = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+        if (l2 === 0) return Math.hypot(px - x1, py - y1);
+        let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
+        t = Math.max(0, Math.min(1, t));
+        return Math.hypot(px - (x1 + t * (x2 - x1)), py - (y1 + t * (y2 - y1)));
+    }
+
+    idCanvas.addEventListener('click', function(e) {
+        const rect = idCanvas.getBoundingClientRect();
+        const scaleX = idCanvas.width / rect.width;
+        const scaleY = idCanvas.height / rect.height;
+        const clickX = (e.clientX - rect.left) * scaleX;
+        const clickY = (e.clientY - rect.top) * scaleY;
+
+        let closestSeg = null;
+        let minDist = 18;
+
+        idShapes.forEach(shape => {
+            shape.segments.forEach(seg => {
+                const d = distToSegment(
+                    clickX, clickY,
+                    seg.x1 * idScale, seg.y1 * idScale,
+                    seg.x2 * idScale, seg.y2 * idScale
+                );
+                if (d < minDist) {
+                    minDist = d;
+                    closestSeg = seg;
+                }
+            });
+        });
+
+        if (closestSeg) {
+            closestSeg.userColor = (closestSeg.userColor === currentPen) ? null : currentPen;
+            document.getElementById('identifyFeedback').innerText = "";
+            drawIdentifyCanvas();
+        }
+    });
+
+    function resetIdentifyGame() {
+        initIdentifyShapes();
+        document.getElementById('identifyFeedback').innerText = "";
+        drawIdentifyCanvas();
+    }
+
+    function checkIdentifyGame() {
+        let correctCount = 0;
+        let totalTargets = 12;
+        let wrongSideColored = false;
+
+        idShapes.forEach(shape => {
+            shape.segments.forEach(seg => {
+                if (seg.role === 'side') {
+                    if (seg.userColor !== null) wrongSideColored = true;
+                } else if (seg.role === 'height') {
+                    if (seg.userColor === 'height') correctCount++;
+                } else if (seg.role === 'top' || seg.role === 'bottom') {
+                    if (seg.userColor === seg.role) correctCount++;
+                }
+            });
+        });
+
+        const fb = document.getElementById('identifyFeedback');
+        if (correctCount === totalTargets && !wrongSideColored) {
+            fb.innerHTML = "🎉 全部塗色正確！你已經完全掌握不同方向梯形的上底、下底和高！";
+            fb.style.color = "#15803d";
+            triggerConfetti();
+        } else if (wrongSideColored) {
+            fb.innerHTML = "⚠️ 注意：不平行的斜邊不是上底也不是下底，請點擊斜邊取消塗色！";
+            fb.style.color = "#b91c1c";
+        } else {
+            fb.innerHTML = `🔍 目前塗對了 ${correctCount} / ${totalTargets} 條線段，請檢查紅（上底）、藍（下底）、綠（高）是否全部塗好！`;
+            fb.style.color = "#d97706";
+        }
+    }
+
+    // =========================================================
+    // 分頁三：課堂實戰練習（每次只列出一題＋橫式一行過）
+    // =========================================================
+    const practiceQuestions = [
+        {
+            id: 1,
+            title: "第 1 題：基礎例題",
+            desc: `一個梯形，其<span style="color:${COLOR_TOP};font-weight:bold;">上底為 5 cm</span>，<span style="color:${COLOR_BOTTOM};font-weight:bold;">下底為 8 cm</span>，<span style="color:${COLOR_HEIGHT};font-weight:bold;">高為 6 cm</span>。求它的面積：`,
+            top: 5, bot: 8, h: 6, ans: 39, unit: "cm²"
+        },
+        {
+            id: 2,
+            title: "第 2 題：直角梯形練習",
+            desc: `<span style="color:${COLOR_TOP};font-weight:bold;">上底為 9 cm</span>，<span style="color:${COLOR_BOTTOM};font-weight:bold;">下底為 4 cm</span>，<span style="color:${COLOR_HEIGHT};font-weight:bold;">高為 7 cm</span> 的直角梯形。求它的面積：`,
+            top: 9, bot: 4, h: 7, ans: 45.5, unit: "cm²"
+        },
+        {
+            id: 3,
+            title: "第 3 題：文字應用題",
+            desc: `梯形的<span style="color:${COLOR_TOP};font-weight:bold;">上底是 15 厘米</span>，<span style="color:${COLOR_BOTTOM};font-weight:bold;">下底是 20 厘米</span>，<span style="color:${COLOR_HEIGHT};font-weight:bold;">高是 4 厘米</span>。它的面積是多少平方厘米？`,
+            top: 15, bot: 20, h: 4, ans: 70, unit: "平方厘米"
+        }
+    ];
+    let currentPracIdx = 0;
+    let pracSavedAnswers = [
+        { top: '', bot: '', h: '', ans: '' },
+        { top: '', bot: '', h: '', ans: '' },
+        { top: '', bot: '', h: '', ans: '' }
+    ];
+
+    function saveCurrentPracInputs() {
+        pracSavedAnswers[currentPracIdx] = {
+            top: document.getElementById('pracTop').value,
+            bot: document.getElementById('pracBot').value,
+            h: document.getElementById('pracH').value,
+            ans: document.getElementById('pracAns').value
+        };
+    }
+
+    function showPracticeQuestion(qNum) {
+        saveCurrentPracInputs();
+        currentPracIdx = qNum - 1;
+        const q = practiceQuestions[currentPracIdx];
+        const saved = pracSavedAnswers[currentPracIdx];
+
+        for (let i = 1; i <= 3; i++) {
+            document.getElementById('pTab' + i).classList.toggle('active', i === qNum);
+        }
+
+        document.getElementById('pracTitle').innerText = q.title;
+        document.getElementById('pracDesc').innerHTML = q.desc;
+        document.getElementById('pracUnit').innerText = q.unit;
+
+        document.getElementById('pracTop').value = saved.top;
+        document.getElementById('pracBot').value = saved.bot;
+        document.getElementById('pracH').value = saved.h;
+        document.getElementById('pracAns').value = saved.ans;
+        document.getElementById('pracFeedback').innerText = '';
+
+        document.getElementById('prevPracBtn').style.visibility = (currentPracIdx === 0) ? 'hidden' : 'visible';
+        document.getElementById('nextPracBtn').style.visibility = (currentPracIdx === practiceQuestions.length - 1) ? 'hidden' : 'visible';
+
+        setActiveInput(document.getElementById('pracTop'));
+    }
+
+    function changePracticeStep(delta) {
+        const nextNum = currentPracIdx + 1 + delta;
+        if (nextNum >= 1 && nextNum <= practiceQuestions.length) {
+            showPracticeQuestion(nextNum);
+        }
+    }
+
+    function checkPracticeCurrent() {
+        saveCurrentPracInputs();
+        const q = practiceQuestions[currentPracIdx];
+        const uTop = parseFloat(document.getElementById('pracTop').value);
+        const uBot = parseFloat(document.getElementById('pracBot').value);
+        const uH = parseFloat(document.getElementById('pracH').value);
+        const uAns = parseFloat(document.getElementById('pracAns').value);
+        const fb = document.getElementById('pracFeedback');
+
+        const basesMatch = (uTop === q.top && uBot === q.bot) || (uTop === q.bot && uBot === q.top);
+        if (basesMatch && uH === q.h && uAns === q.ans) {
+            fb.innerHTML = `🎉 答對了！(${q.top} ＋ ${q.bot}) × ${q.h} ÷ 2 ＝ ${q.ans} ${q.unit}！`;
+            fb.style.color = "#15803d";
+            triggerConfetti();
+        } else {
+            fb.innerHTML = `❌ 再檢查一下！請對應題目的紅（上底 ${q.top}）、藍（下底 ${q.bot}）、綠（高 ${q.h}）填入橫式計算。`;
+            fb.style.color = "#dc2626";
+        }
+    }
+
+    // =========================================================
+    // 分頁四：隨機出題挑戰（確保面積必為整數）
+    // =========================================================
+    const randCanvas = document.getElementById('randomCanvas');
+    const randCtx = randCanvas.getContext('2d');
+    const randScale = 28;
+
+    let randQ = { top: 4, bot: 8, h: 5, offset: 2, answered: false };
+    let randScoreCount = 0;
+
+    function generateRandomQuestion() {
+        const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+        
+        // 迴圈確保 (上底 + 下底) × 高 必定為偶數，使面積 100% 為整數！
+        do {
+            randQ.top = randInt(2, 7);
+            randQ.bot = randInt(randQ.top + 2, 11);
+            randQ.h = randInt(3, 7);
+        } while (((randQ.top + randQ.bot) * randQ.h) % 2 !== 0);
+
+        randQ.offset = (Math.random() < 0.35) ? 0 : randInt(1, Math.max(1, randQ.bot - randQ.top));
+        randQ.answered = false;
+
+        ['randInputTop', 'randInputBot', 'randInputH', 'randInputArea'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        document.getElementById('randEchoTop').innerText = '?';
+        document.getElementById('randEchoBot').innerText = '?';
+        document.getElementById('randEchoH').innerText = '?';
+        document.getElementById('randFeedback').innerText = '';
+
+        drawRandomCanvas();
+        setActiveInput(document.getElementById('randInputTop'));
+    }
+
+    ['randInputTop', 'randInputBot', 'randInputH'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+            document.getElementById('randEchoTop').innerText = document.getElementById('randInputTop').value || '?';
+            document.getElementById('randEchoBot').innerText = document.getElementById('randInputBot').value || '?';
+            document.getElementById('randEchoH').innerText = document.getElementById('randInputH').value || '?';
+        });
+    });
+
+    function drawRandomCanvas() {
+        randCtx.clearRect(0, 0, randCanvas.width, randCanvas.height);
+
+        randCtx.strokeStyle = "#cbd5e1";
+        randCtx.lineWidth = 1;
+        for (let x = 0; x <= randCanvas.width; x += randScale) {
+            randCtx.beginPath(); randCtx.moveTo(x, 0); randCtx.lineTo(x, randCanvas.height); randCtx.stroke();
+        }
+        for (let y = 0; y <= randCanvas.height; y += randScale) {
+            randCtx.beginPath(); randCtx.moveTo(0, y); randCtx.lineTo(randCanvas.width, y); randCtx.stroke();
+        }
+
+        const startX = 4 * randScale;
+        const startY = 10 * randScale;
+
+        const wBot = randQ.bot * randScale;
+        const wTop = randQ.top * randScale;
+        const h = randQ.h * randScale;
+        const off = randQ.offset * randScale;
+
+        randCtx.save();
+        randCtx.translate(startX, startY);
+
+        const x0 = 0, y0 = 0;
+        const x1 = wBot, y1 = 0;
+        const x2 = off + wTop, y2 = -h;
+        const x3 = off, y3 = -h;
+
+        randCtx.beginPath();
+        randCtx.moveTo(x0, y0);
+        randCtx.lineTo(x1, y1);
+        randCtx.lineTo(x2, y2);
+        randCtx.lineTo(x3, y3);
+        randCtx.closePath();
+        randCtx.fillStyle = "rgba(219, 234, 254, 0.65)";
+        randCtx.fill();
+        randCtx.lineWidth = 2.5;
+        randCtx.strokeStyle = "#475569";
+        randCtx.stroke();
+
+        // 上底 (紅)
+        randCtx.beginPath();
+        randCtx.moveTo(x3, y3);
+        randCtx.lineTo(x2, y2);
+        randCtx.lineWidth = 5;
+        randCtx.strokeStyle = COLOR_TOP;
+        randCtx.stroke();
+
+        // 下底 (藍)
+        randCtx.beginPath();
+        randCtx.moveTo(x0, y0);
+        randCtx.lineTo(x1, y1);
+        randCtx.lineWidth = 5;
+        randCtx.strokeStyle = COLOR_BOTTOM;
+        randCtx.stroke();
+
+        // 高 (綠虛線)
+        randCtx.beginPath();
+        randCtx.setLineDash([5, 4]);
+        randCtx.moveTo(off, -h);
+        randCtx.lineTo(off, 0);
+        randCtx.lineWidth = 3.5;
+        randCtx.strokeStyle = COLOR_HEIGHT;
+        randCtx.stroke();
+        randCtx.setLineDash([]);
+        randCtx.strokeRect(off, -12, 12, 12);
+
+        [ {x:x0, y:y0, c:COLOR_BOTTOM}, {x:x1, y:y1, c:COLOR_BOTTOM}, {x:x2, y:y2, c:COLOR_TOP}, {x:x3, y:y3, c:COLOR_TOP} ].forEach(pt => {
+            randCtx.beginPath();
+            randCtx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2);
+            randCtx.fillStyle = pt.c;
+            randCtx.fill();
+        });
+
+        randCtx.font = "bold 16px 'Microsoft JhengHei'";
+        randCtx.fillStyle = COLOR_TOP;
+        randCtx.fillText(`上底: ${randQ.top} cm`, off + wTop / 2 - 35, -h - 12);
+        randCtx.fillStyle = COLOR_BOTTOM;
+        randCtx.fillText(`下底: ${randQ.bot} cm`, wBot / 2 - 35, 24);
+        randCtx.fillStyle = COLOR_HEIGHT;
+        randCtx.fillText(`高: ${randQ.h} cm`, off + 8, -h / 2 + 5);
+
+        randCtx.restore();
+    }
+
+    function checkRandomQuestion() {
+        const uTop = parseInt(document.getElementById('randInputTop').value);
+        const uBot = parseInt(document.getElementById('randInputBot').value);
+        const uH = parseInt(document.getElementById('randInputH').value);
+        const uArea = parseInt(document.getElementById('randInputArea').value);
+
+        const expectedArea = (randQ.top + randQ.bot) * randQ.h / 2;
+        const fb = document.getElementById('randFeedback');
+
+        if (uTop === randQ.top && uBot === randQ.bot && uH === randQ.h && uArea === expectedArea) {
+            fb.innerHTML = `🎉 完全正確！(${randQ.top} + ${randQ.bot}) × ${randQ.h} ÷ 2 ＝ ${expectedArea} cm²！`;
+            fb.style.color = "#15803d";
+            triggerConfetti();
+            if (!randQ.answered) {
+                randScoreCount++;
+                randQ.answered = true;
+                document.getElementById('randomScore').innerText = randScoreCount;
+            }
+        } else {
+            fb.innerHTML = `❌ 還有地方填錯喔！請對照左圖：紅上底(${randQ.top})、藍下底(${randQ.bot})、綠高(${randQ.h})，再算一次面積。`;
+            fb.style.color = "#dc2626";
+        }
+    }
+
+    // 初始化所有模組
+    updateDimensions();
+    initIdentifyShapes();
+    showPracticeQuestion(1);
+    generateRandomQuestion();
+    autoFocusFirstVisibleInput();
 </script>
 </body>
 </html>
